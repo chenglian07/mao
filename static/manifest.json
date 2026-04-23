@@ -1,0 +1,24 @@
+{
+  "name": "MeowGuard · 城市流浪猫生命共同体",
+  "short_name": "MeowGuard",
+  "description": "城市流浪猫救助、绝育、领养一体化平台",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7fbff",
+  "theme_color": "#ff8fb0",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23ff8fb0'/%3E%3Ctext x='50%25' y='50%25' font-size='280' text-anchor='middle' dy='.3em' fill='white'%3E🐱%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23ff8fb0'/%3E%3Ctext x='50%25' y='50%25' font-size='280' text-anchor='middle' dy='.3em' fill='white'%3E🐱%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

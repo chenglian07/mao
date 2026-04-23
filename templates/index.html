@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeowGuard · 城市流浪猫生命共同体</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=cache_bust) }}">
+    <!-- PWA -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#ff8fb0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MeowGuard">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152.png') }}">
+    <!-- Chart.js 图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div>🐱 MeowGuard</div>
+            <div class="nav-tagline">城市流浪猫生命共同体</div>
+        </div>
+<div class="nav-links">
+    <a href="/" class="active">🏠 首页</a>
+    <a href="/cats">🐱 猫咪档案</a>
+    <a href="/adopt">🏡 领养</a>
+    <button id="darkModeToggle" class="dark-mode-toggle" title="切换深色模式">🌙</button>
+</div>
+    </nav>
+
+    <main class="main-content">
+        <div class="live-section">
+            <div class="live-header">
+                <h1>📹 MeowGuard 直播间</h1>
+                <div class="live-controls">
+                    <div class="live-status">
+                        <span class="live-dot"></span>
+                        <span>直播中</span>
+                    </div>
+                    <select class="room-select" id="roomSelect" aria-label="切换直播间"></select>
+                </div>
+            </div>
+            
+            <div class="video-container">
+                <div class="video-placeholder" id="videoPlaceholder">
+                    <div class="cat-animation">
+                        <div class="cat-silhouette" id="liveCatEmoji">🐱</div>
+                        <div class="cat-name" id="liveCatTitle">咪咪的直播间</div>
+                        <div class="cat-location" id="liveCatLocation">📍 A 区 - 教学楼后</div>
+                    </div>
+                    <p class="video-tip">点击投喂，为守护添一份口粮与关注</p>
+                </div>
+            </div>
+
+            <div class="live-stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="onlineViewers">1,234</span>
+                    <span class="stat-label">在线观众</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="todayFeeds">156</span>
+                    <span class="stat-label">今日投喂</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="totalFeeds">791</span>
+                    <span class="stat-label">累计投喂</span>
+                </div>
+            </div>
+
+            <div class="feed-section">
+                <button class="feed-btn" id="feedBtn">
+                    <span class="feed-icon">🍖</span>
+                    <span class="feed-text">投喂猫咪</span>
+                    <span class="feed-cost">1 积分/次</span>
+                </button>
+                <div class="feed-animation" id="feedAnimation"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-card">
+                <h3>📋 投喂记录</h3>
+                <div class="feed-logs" id="feedLogs">
+                    <div class="log-item">
+                        <span class="log-time">刚刚</span>
+                        <span class="log-user">系统</span>
+                        <span class="log-action">直播间已开启</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>🌡️ 环境监测</h3>
+                <div class="env-data">
+                    <div class="env-item">
+                        <span class="env-label">温度</span>
+                        <span class="env-value" id="temperature">22°C</span>
+                    </div>
+                    <div class="env-item">
+                        <span class="env-label">湿度</span>
+                        <span class="env-value" id="humidity">58%</span>
+                    </div>
+                    <div class="env-item">
+                        <span class="env-label">空气质量</span>
+                        <span class="env-value good">良好</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>🐱 当前猫咪</h3>
+                <div class="current-cat">
+                    <div class="cat-avatar" id="sidebarCatEmoji">🐱</div>
+                    <div class="cat-info">
+                        <div class="cat-name" id="sidebarCatName">咪咪</div>
+                        <div class="cat-nickname" id="sidebarCatNickname">小区一霸</div>
+                        <div class="cat-status" id="sidebarCatBadges"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据统计可视化 -->
+        <div class="stats-dashboard">
+            <div class="stats-header">
+                <h3><span class="stats-icon">📊</span> 平台数据统计</h3>
+                <p class="stats-subtitle">实时运营数据概览</p>
+            </div>
+            <div class="stats-grid" id="statsGrid">
+                <!-- 统计卡片将由 JS 动态生成 -->
+            </div>
+            
+            <!-- 图表区域 -->
+            <div class="charts-container">
+                <!-- 投喂趋势图 -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h4>🍖 投喂趋势</h4>
+                        <div class="chart-period">
+                            <button class="period-btn active" data-period="week">本周</button>
+                            <button class="period-btn" data-period="month">本月</button>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="feedChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 积分排行榜 -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h4>🏆 猫咪积分排行</h4>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="pointsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 消息通知中心 -->
+        <div class="notification-center">
+            <div class="notification-header">
+                <h3><span class="notification-icon">🔔</span> 消息通知</h3>
+                <button class="notification-mark-read" id="markAllRead">全部已读</button>
+            </div>
+            <div class="notification-tabs">
+                <button class="notification-tab active" data-tab="all">全部</button>
+                <button class="notification-tab" data-tab="system">系统</button>
+                <button class="notification-tab" data-tab="activity">动态</button>
+                <button class="notification-tab" data-tab="reminder">提醒</button>
+            </div>
+            <div class="notification-list" id="notificationList">
+                <!-- 通知列表将由 JS 动态生成 -->
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js', v=cache_bust) }}"></script>
+    <script>
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+                    .then(function(registration) {
+                        console.log('Service Worker 注册成功:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('Service Worker 注册失败:', error);
+                    });
+            });
+        }
+    </script>
+    </body>
+</html>

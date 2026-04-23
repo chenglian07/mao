@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猫咪档案 - MeowGuard · 城市流浪猫生命共同体</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=cache_bust) }}">
+    <!-- PWA -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#ff8fb0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MeowGuard">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152.png') }}">
+    <!-- Chart.js 图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div>🐱 MeowGuard</div>
+            <div class="nav-tagline">城市流浪猫生命共同体</div>
+        </div>
+        <div class="nav-links">
+            <a href="/">直播间</a>
+            <a href="/cats" class="active">猫咪档案</a>
+            <a href="/adopt">领养中心</a>
+        </div>
+    </nav>
+
+    <main class="main-content cats-page">
+        <div class="page-header">
+            <h1>📋 猫咪档案</h1>
+            <p class="page-subtitle">记录、守护、让每一次相遇都有归处</p>
+        </div>
+
+        <!-- 搜索和过滤 -->
+        <div class="filter-bar">
+            <div class="filter-group filter-search">
+                <input class="filter-input" id="catsSearch" type="search" placeholder="🔍 搜索猫咪名字、昵称、位置...">
+            </div>
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="adoption">可领养</button>
+                <button class="filter-btn" data-filter="neutered">已绝育</button>
+            </div>
+        </div>
+
+        <!-- 猫咪列表 -->
+        <div class="cats-list" id="catsList">
+            <!-- 猫咪卡片将由 JS 动态生成 -->
+        </div>
+
+        <!-- 猫咪详情弹窗 -->
+        <div class="cat-detail-modal" id="catDetailModal">
+            <div class="modal-content">
+                <button class="modal-close" id="modalClose">&times;</button>
+                <div class="modal-body" id="modalBody">
+                    <!-- 详情内容 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 可折叠的信息面板 -->
+        <div class="info-panels">
+            <!-- 积分排行榜（可折叠） -->
+            <div class="info-panel collapsible" id="leaderboardPanel">
+                <div class="panel-header" onclick="togglePanel('leaderboardPanel')">
+                    <h3>🏆 积分排行榜</h3>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-content">
+                    <p class="panel-subtitle">积分获取：投喂 +1 分 · 分享 +2 分 · 领养成功 +100 分</p>
+                    <div class="leaderboard-list" id="leaderboardList">
+                        <!-- 排行榜内容 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据统计（可折叠） -->
+            <div class="info-panel collapsible" id="statsPanel">
+                <div class="panel-header" onclick="togglePanel('statsPanel')">
+                    <h3>📊 平台数据</h3>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-content">
+                    <div class="stats-mini">
+                        <div class="stat-item">
+                            <span class="stat-value" id="totalCats">0</span>
+                            <span class="stat-label">猫咪总数</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="totalFeeds">0</span>
+                            <span class="stat-label">投喂次数</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="totalViews">0</span>
+                            <span class="stat-label">查看次数</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="activeUsers">0</span>
+                            <span class="stat-label">活跃用户</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 消息通知（可折叠） -->
+            <div class="info-panel collapsible" id="notificationPanel">
+                <div class="panel-header" onclick="togglePanel('notificationPanel')">
+                    <h3>🔔 消息通知</h3>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-content">
+                    <div class="notification-list" id="notificationList">
+                        <!-- 通知列表 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 全局变量
+        let catsData = [];
+        let charts = {};
+
+        // 切换面板展开/折叠
+        function togglePanel(panelId) {
+            const panel = document.getElementById(panelId);
+            const content = panel.querySelector('.panel-content');
+            const toggle = panel.querySelector('.panel-toggle');
+            
+            if (content.style.maxHeight) {
+                content.style.maxHeight = '';
+                toggle.textContent = '▼';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                toggle.textContent = '▲';
+            }
+        }
+
+        // 格式化时间
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const date = new Date(timeStr);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+            return Math.floor(diff / 86400000) + '天前';
+        }
+
+        // 显示提示消息
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        // 加载猫咪数据
+        async function loadCats() {
+            try {
+                const response = await fetch('/api/cats');
+                catsData = await response.json();
+                // 按 feed_count 降序排序，确保排行榜和卡片顺序一致
+                const sortedCats = [...catsData].sort((a, b) => (b.feed_count || 0) - (a.feed_count || 0));
+                renderCats(sortedCats);
+                updateStats();
+            } catch (error) {
+                console.error('加载猫咪数据失败:', error);
+            }
+        }
+
+        // 渲染猫咪列表
+        function renderCats(cats) {
+            const container = document.getElementById('catsList');
+            
+            if (cats.length === 0) {
+                container.innerHTML = '<div class="empty-state">没有找到匹配的猫咪</div>';
+                renderLeaderboard([]);
+                return;
+            }
+
+            container.innerHTML = cats.map((cat, index) => `
+                <div class="cat-card" data-cat-id="${cat.id}" data-rank="${index + 1}">
+                    <div class="cat-card-image">
+                        <div class="cat-avatar" style="background-color: ${getAvatarColor(cat.id)}">
+                            ${cat.name.charAt(0)}
+                        </div>
+                        ${index < 3 ? `<div class="rank-badge rank-${index + 1}">${index + 1}</div>` : ''}
+                    </div>
+                    <div class="cat-card-info">
+                        <div class="cat-card-header">
+                            <h3 class="cat-card-name">${cat.name}</h3>
+                            <span class="cat-card-points">${cat.feed_count || 0} 分</span>
+                        </div>
+                        <p class="cat-card-nickname">${cat.nickname || ''}</p>
+                        <div class="cat-card-location">📍 ${cat.location || '未知位置'}</div>
+                        <div class="cat-card-tags">
+                            ${cat.gender === 'female' ? '<span class="tag tag-female">♀</span>' : '<span class="tag tag-male">♂</span>'}
+                            ${cat.neutered ? '<span class="tag tag-success">已绝育</span>' : ''}
+                            ${cat.adoption_ready ? '<span class="tag tag-warning">可领养</span>' : ''}
+                            <span class="tag">${cat.age || '未知年龄'}</span>
+                        </div>
+                    </div>
+                    <div class="cat-card-actions">
+                        <button class="btn btn-feed" onclick="feedCat(${cat.id}, '${cat.name}')">投喂</button>
+                        <button class="btn btn-detail" onclick="showCatDetail(${cat.id})">详情</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // 排行榜使用已排序的数据
+            renderLeaderboard(cats);
+        }
+
+        // 获取头像颜色
+        function getAvatarColor(id) {
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'];
+            return colors[(id - 1) % colors.length];
+        }
+
+        // 渲染排行榜
+        function renderLeaderboard(cats) {
+            const container = document.getElementById('leaderboardList');
+            
+            // cats 已经是按 feed_count 降序排序的
+            if (cats.length === 0) {
+                container.innerHTML = '<div class="empty-notifications">暂无排行榜数据</div>';
+                return;
+            }
+            
+            container.innerHTML = cats.slice(0, 5).map((cat, index) => `
+                <div class="leaderboard-item ${index < 3 ? 'top-3' : ''}">
+                    <div class="leaderboard-rank">
+                        ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    </div>
+                    <div class="leaderboard-info">
+                        <span class="leaderboard-name">${cat.name}</span>
+                        <span class="leaderboard-location">📍 ${cat.location || ''}</span>
+                    </div>
+                    <div class="leaderboard-points">${cat.feed_count || 0} 分</div>
+                </div>
+            `).join('');
+        }
+
+        // 更新统计数据
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalCats').textContent = stats.total_cats || 0;
+                document.getElementById('totalFeeds').textContent = stats.total_feeds || 0;
+                document.getElementById('totalViews').textContent = stats.total_views || 0;
+                document.getElementById('activeUsers').textContent = stats.active_users || 0;
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
+
+        // 投喂猫咪
+        async function feedCat(catId, catName) {
+            try {
+                const response = await fetch('/api/feed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cat_id: catId, user_name: '访客' })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`✅ 投喂成功！${catName} 收到了你的心意`);
+                    loadCats(); // 重新加载数据
+                } else {
+                    showToast(`❌ ${result.message}`);
+                }
+            } catch (error) {
+                console.error('投喂失败:', error);
+                showToast('投喂失败，请重试');
+            }
+        }
+
+        // 显示猫咪详情
+        async function showCatDetail(catId) {
+            try {
+                const response = await fetch(`/api/cat/${catId}`);
+                const cat = await response.json();
+                
+                const modal = document.getElementById('catDetailModal');
+                const modalBody = document.getElementById('modalBody');
+                
+                modalBody.innerHTML = `
+                    <div class="detail-header">
+                        <div class="detail-avatar" style="background-color: ${getAvatarColor(cat.id)}">
+                            ${cat.name.charAt(0)}
+                        </div>
+                        <h2>${cat.name}</h2>
+                        <p class="detail-nickname">${cat.nickname || ''}</p>
+                    </div>
+                    <div class="detail-info">
+                        <div class="info-row">
+                            <span class="info-label">昵称</span>
+                            <span class="info-value">${cat.nickname || '无'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">性别</span>
+                            <span class="info-value">${cat.gender === 'female' ? '♀ 雌性' : '♂ 雄性'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">年龄</span>
+                            <span class="info-value">${cat.age || '未知'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">毛色</span>
+                            <span class="info-value">${cat.color || '未知'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">位置</span>
+                            <span class="info-value">📍 ${cat.location || '未知位置'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">健康状况</span>
+                            <span class="info-value">${cat.health || '未知'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">绝育状态</span>
+                            <span class="info-value">${cat.neutered ? '✅ 已绝育' : '❌ 未绝育'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">领养状态</span>
+                            <span class="info-value">${cat.adoption_ready ? '✅ 可领养' : '❌ 暂不可领养'}</span>
+                        </div>
+                        <div class="info-row full-width">
+                            <span class="info-label">简介</span>
+                            <span class="info-value">${cat.description || '暂无简介'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">投喂次数</span>
+                            <span class="info-value">${cat.feed_count || 0} 次</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">查看次数</span>
+                            <span class="info-value">${cat.views || 0} 次</span>
+                        </div>
+                    </div>
+                    <div class="detail-actions">
+                        <button class="btn btn-primary btn-feed-detail" onclick="feedCat(${cat.id}, '${cat.name}')">
+                            🍖 投喂 ${cat.name}
+                        </button>
+                        ${cat.adoption_ready ? `
+                        <button class="btn btn-secondary" onclick="window.location.href='/adopt'">
+                            🏠 申请领养
+                        </button>
+                        ` : ''}
+                    </div>
+                `;
+                
+                modal.classList.add('show');
+            } catch (error) {
+                console.error('加载详情失败:', error);
+                showToast('加载详情失败');
+            }
+        }
+
+        // 关闭详情弹窗
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('catDetailModal');
+            const closeBtn = document.getElementById('modalClose');
+            
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+
+            // 加载数据
+            loadCats();
+            loadNotifications();
+
+            // 搜索功能
+            const searchInput = document.getElementById('catsSearch');
+            searchInput.addEventListener('input', (e) => {
+                const keyword = e.target.value.toLowerCase();
+                const filtered = catsData.filter(cat => 
+                    cat.name.toLowerCase().includes(keyword) ||
+                    (cat.nickname && cat.nickname.toLowerCase().includes(keyword)) ||
+                    (cat.location && cat.location.toLowerCase().includes(keyword)) ||
+                    (cat.color && cat.color.toLowerCase().includes(keyword))
+                );
+                renderCats(filtered);
+            });
+
+            // 过滤功能
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    const filter = btn.dataset.filter;
+                    let filtered = catsData;
+                    
+                    if (filter === 'adoption') {
+                        filtered = catsData.filter(cat => cat.adoption_ready);
+                    } else if (filter === 'neutered') {
+                        filtered = catsData.filter(cat => cat.neutered);
+                    }
+                    
+                    renderCats(filtered);
+                });
+            });
+        });
+
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+                    .then(function(registration) {
+                        console.log('Service Worker 注册成功:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('Service Worker 注册失败:', error);
+                    });
+            });
+        }
+
+        // 加载通知
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notifications');
+                const notifications = await response.json();
+                
+                const container = document.getElementById('notificationList');
+                
+                if (notifications.length === 0) {
+                    container.innerHTML = '<div class="empty-notifications">暂无消息</div>';
+                    return;
+                }
+
+                container.innerHTML = notifications.slice(0, 5).map(notif => {
+                    const icon = notif.type === 'emergency' ? '🚨' : 
+                                 notif.type === 'activity' ? '💬' : 
+                                 notif.type === 'reminder' ? '⏰' : '📢';
+                    return `
+                    <div class="notification-item ${notif.unread ? 'unread' : ''}">
+                        <div class="notification-icon">${icon}</div>
+                        <div class="notification-content">
+                            <div class="notification-title">${notif.title}</div>
+                            <div class="notification-message">${notif.message}</div>
+                        </div>
+                        <div class="notification-time">${formatTime(notif.time)}</div>
+                    </div>
+                `}).join('');
+            } catch (error) {
+                console.error('加载通知失败:', error);
+                // 显示模拟通知用于演示
+                showMockNotifications();
+            }
+        }
+
+        // 显示模拟通知（用于演示）
+        function showMockNotifications() {
+            const container = document.getElementById('notificationList');
+            const mockNotifications = [
+                {
+                    icon: '🚨',
+                    title: '紧急寻猫启事',
+                    message: '南山区科技园附近有一只橘猫走失，请联系 138****1234',
+                    time: new Date(Date.now() - 3600000)
+                },
+                {
+                    icon: '💬',
+                    title: '投喂提醒',
+                    message: '您投喂的"小花"今天已经吃饱啦！',
+                    time: new Date(Date.now() - 7200000)
+                },
+                {
+                    icon: '⏰',
+                    title: '绝育提醒',
+                    message: '"小黑"的绝育复查时间快到了，请记得带它去医院',
+                    time: new Date(Date.now() - 86400000)
+                }
+            ];
+            
+            container.innerHTML = mockNotifications.map(notif => `
+                <div class="notification-item unread">
+                    <div class="notification-icon">${notif.icon}</div>
+                    <div class="notification-content">
+                        <div class="notification-title">${notif.title}</div>
+                        <div class="notification-message">${notif.message}</div>
+                    </div>
+                    <div class="notification-time">${formatTime(notif.time)}</div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
