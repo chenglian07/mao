@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeowGuard · 城市流浪猫生命共同体</title>
+<style>
+/* ===== 全局变量与重置 ===== */
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+    --bg: #f7fbff; --bg-1:#e0f7fa; --bg-2:#fff0f5; --bg-3:#fff9c4;
+    --card:rgba(255,255,255,0.95); --text:#4a4a4a; --muted:#8e8e8e;
+    --primary:#ff8fb0; --primary-2:#8be1db; --danger:#ff6b6b;
+    --shadow-sm:0 8px 24px rgba(255,143,176,0.12);
+    --shadow-md:0 16px 40px rgba(139,225,219,0.20);
+    --radius-lg:28px; --radius-md:20px; --radius-sm:16px;
+    --ring:0 0 0 4px rgba(255,143,176,0.25);
+}
+body.dark-mode {
+    --bg:#1a1a2e; --bg-1:#16213e; --bg-2:#1f1f3a; --bg-3:#2d2d4a;
+    --card:rgba(30,30,50,0.95); --text:#e0e0e0; --muted:#a0a0a0;
+    --shadow-sm:0 8px 24px rgba(0,0,0,0.3);
+    --shadow-md:0 16px 40px rgba(0,0,0,0.4);
+}
+body {
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--bg); min-height:100vh; color:var(--text); line-height:1.6;
+}
+a { text-decoration:none; color:inherit; }
+
+/* ===== 导航栏 ===== */
+.navbar {
+    background:rgba(255,255,255,0.85); backdrop-filter:blur(14px);
+    padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center;
+    box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:1000;
+    border-bottom:3px solid rgba(255,255,255,0.9);
+}
+body.dark-mode .navbar { background:rgba(30,30,50,0.85); border-bottom-color:rgba(255,255,255,0.1); }
+.nav-brand { display:flex; flex-direction:column; gap:0.1rem; font-size:1.5rem; font-weight:bold; color:var(--primary); }
+.nav-tagline { font-size:0.78rem; font-weight:600; color:var(--muted); }
+.nav-links { display:flex; gap:1rem; align-items:center; }
+.nav-links a, .nav-links button {
+    color:var(--muted); font-weight:600; padding:0.6rem 1.2rem; border-radius:20px;
+    transition:all 0.3s; border:3px solid rgba(255,255,255,0.9); background:rgba(255,255,255,0.6);
+    cursor:pointer; font-size:1rem; font-family:inherit;
+}
+.nav-links a.active, .nav-links a:hover, .nav-links button:hover {
+    background:var(--primary); color:white; border-color:var(--primary);
+    box-shadow:0 4px 12px rgba(255,143,176,0.3); transform:translateY(-2px);
+}
+body.dark-mode .nav-links a, body.dark-mode .nav-links button {
+    background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1);
+}
+body.dark-mode .nav-links a.active, body.dark-mode .nav-links a:hover, body.dark-mode .nav-links button:hover {
+    background:var(--primary); border-color:var(--primary);
+}
+
+/* ===== 主内容 ===== */
+.main-content { display:grid; grid-template-columns:1fr 350px; gap:2rem; padding:2rem; max-width:1600px; margin:0 auto; }
+
+/* 直播区域 */
+.live-section {
+    background:var(--card); border:3px solid rgba(255,255,255,0.9);
+    border-radius:var(--radius-lg); padding:1.5rem; box-shadow:var(--shadow-md);
+}
+body.dark-mode .live-section { border-color:rgba(255,255,255,0.1); }
+.live-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+.live-header h1 { font-size:1.5rem; color:var(--text); }
+.live-status { display:flex; align-items:center; gap:0.5rem; color:var(--muted); font-weight:500; }
+.live-dot {
+    width:12px; height:12px; background:var(--danger); border-radius:50%;
+    animation:pulse 2s infinite; box-shadow:0 0 8px rgba(255,107,107,0.6);
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+.video-container {
+    background:#1f2333; border:1px solid rgba(255,255,255,0.12);
+    border-radius:var(--radius-md); aspect-ratio:16/9; display:flex;
+    align-items:center; justify-content:center; margin-bottom:1.5rem; overflow:hidden;
+}
+body.dark-mode .video-container { background:#0f0f1a; }
+.video-placeholder { text-align:center; color:white; }
+.cat-animation { animation:bounce 2s ease-in-out infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+.cat-silhouette { font-size:6rem; transition:transform 0.3s; }
+.cat-silhouette.cat-bounce { animation:catBounce 0.5s ease-out; }
+@keyframes catBounce {
+    0%,100%{transform:translateY(0) scale(1)}
+    25%{transform:translateY(-30px) scale(1.1)}
+    50%{transform:translateY(-15px) scale(1.05)}
+    75%{transform:translateY(-5px) scale(1.02)}
+}
+.live-cat-name { font-size:1.5rem; margin-top:1rem; }
+.live-cat-location { color:rgba(255,255,255,0.78); margin-top:0.5rem; }
+.video-tip { margin-top:1rem; color:rgba(255,255,255,0.68); font-size:0.9rem; }
+
+.live-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
+.stat-item {
+    background:rgba(255,255,255,0.7); border:1px solid rgba(17,24,39,0.06);
+    padding:1rem; border-radius:8px; text-align:center; transition:transform 0.25s;
+}
+body.dark-mode .stat-item { background:rgba(255,255,255,0.05); }
+.stat-item:hover { transform:translateY(-2px); }
+.stat-value { display:block; font-size:1.5rem; font-weight:bold; color:var(--primary); }
+.stat-label { color:var(--muted); font-size:0.9rem; }
+
+/* 投喂按钮 */
+.feed-section { text-align:center; position:relative; }
+.feed-btn {
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    border:none; padding:1rem 3rem; border-radius:50px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:0.5rem; font-size:1.1rem; color:white;
+    transition:transform 0.3s, box-shadow 0.3s;
+    box-shadow:0 12px 30px rgba(255,95,162,0.28); position:relative; overflow:hidden;
+}
+.feed-btn:hover { transform:scale(1.05); box-shadow:0 18px 44px rgba(255,95,162,0.34); }
+.feed-btn:active { transform:scale(0.98); }
+.feed-btn:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+.feed-cost { font-size:0.9rem; opacity:0.8; }
+
+.feed-animation { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100; }
+.feed-particle {
+    position:absolute; font-size:1.5rem;
+    animation:feedFloat 0.8s ease-out forwards; opacity:0;
+}
+@keyframes feedFloat {
+    0%{ opacity:1; transform:translate(0,0) scale(0.5); }
+    50%{ opacity:1; transform:translate(var(--tx,0), var(--ty,-50px)) scale(1.2); }
+    100%{ opacity:0; transform:translate(var(--tx,0), var(--ty,-100px)) scale(1); }
+}
+
+/* 侧边栏 */
+.sidebar { display:flex; flex-direction:column; gap:1rem; }
+.sidebar-card {
+    background:var(--card); border:1px solid rgba(255,255,255,0.6);
+    border-radius:var(--radius-md); padding:1.5rem; box-shadow:var(--shadow-sm);
+}
+body.dark-mode .sidebar-card { border-color:rgba(255,255,255,0.1); }
+.sidebar-card h3 { font-size:1rem; color:var(--text); margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid #eee; }
+body.dark-mode .sidebar-card h3 { border-bottom-color:rgba(255,255,255,0.1); }
+
+.feed-logs { max-height:200px; overflow-y:auto; }
+.log-item { display:flex; gap:0.5rem; padding:0.5rem 0; font-size:0.85rem; border-bottom:1px solid #f5f5f5; }
+body.dark-mode .log-item { border-bottom-color:rgba(255,255,255,0.1); }
+.log-time { color:rgba(107,114,128,0.85); min-width:50px; }
+.log-user { color:var(--primary); font-weight:500; }
+.log-action { color:var(--muted); flex:1; }
+
+.env-data { display:flex; flex-direction:column; gap:0.8rem; }
+.env-item { display:flex; justify-content:space-between; align-items:center; }
+.env-label { color:var(--muted); }
+.env-value { font-weight:bold; color:var(--text); }
+.env-value.good { color:#27ae60; }
+
+.current-cat { display:flex; gap:1rem; align-items:center; }
+.cat-avatar {
+    font-size:3rem; background:rgba(102,126,234,0.12); border-radius:50%;
+    width:70px; height:70px; display:flex; align-items:center; justify-content:center;
+}
+.cat-info { flex:1; }
+.cat-info .cat-name { font-size:1.2rem; font-weight:bold; }
+.cat-nickname { color:var(--muted); font-size:0.9rem; }
+.cat-status { display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap; }
+.status-badge {
+    padding:0.3rem 0.8rem; border-radius:12px; font-size:0.75rem; font-weight:600;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+.status-badge.healthy { background:#e8f5e9; color:#2e7d32; border:1px solid #c8e6c9; }
+.status-badge.neutered { background:#e3f2fd; color:#1565c0; border:1px solid #bbdefb; }
+.status-badge.adoption { background:#fff3e0; color:#ef6c00; border:1px solid #ffe0b2; }
+.status-badge.unavailable { background:#f5f5f5; color:#9e9e9e; border:1px solid #e0e0e0; }
+body.dark-mode .status-badge.healthy { background:rgba(46,125,50,0.2); border-color:rgba(46,125,50,0.4); }
+body.dark-mode .status-badge.neutered { background:rgba(21,101,192,0.2); border-color:rgba(21,101,192,0.4); }
+body.dark-mode .status-badge.adoption { background:rgba(255,152,0,0.2); border-color:rgba(255,152,0,0.4); }
+
+/* 猫咪档案 */
+.cats-section { margin-top:2rem; }
+.cats-section h2 { text-align:center; color:var(--text); margin-bottom:1.5rem; font-size:1.5rem; }
+.cats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.5rem; }
+.cat-card {
+    background:var(--card); border:3px solid rgba(255,255,255,0.9); border-radius:24px;
+    overflow:hidden; box-shadow:var(--shadow-sm); transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s;
+    cursor:pointer;
+}
+body.dark-mode .cat-card { border-color:rgba(255,255,255,0.1); }
+.cat-card:hover { transform:translateY(-8px) scale(1.02); box-shadow:var(--shadow-md); }
+.cat-card-image {
+    position:relative; padding:2.5rem 2rem; display:flex; justify-content:center;
+    background:radial-gradient(circle at top left,rgba(255,255,255,0.8),transparent), var(--cat-bg);
+}
+.cat-card-emoji { font-size:5rem; }
+.cat-card-info { padding:1.5rem; }
+.cat-card-name { font-size:1.3rem; margin-bottom:0.3rem; }
+.cat-card-nickname { color:var(--muted); font-style:italic; margin-bottom:0.8rem; }
+.cat-card-location { color:var(--muted); font-size:0.9rem; margin-bottom:0.8rem; }
+.cat-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.8rem; }
+.tag {
+    padding:0.3rem 0.8rem; border-radius:12px; font-size:0.8rem; font-weight:500;
+    background:rgba(102,126,234,0.08); border:1px solid rgba(102,126,234,0.15); color:var(--primary-2);
+}
+body.dark-mode .tag { background:rgba(139,225,219,0.15); border-color:rgba(139,225,219,0.3); }
+
+/* 详情弹窗 */
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; }
+.modal.show { display:flex; }
+.modal-content {
+    background:var(--card); border:3px solid rgba(255,255,255,0.9); border-radius:var(--radius-lg);
+    max-width:600px; width:90%; max-height:80vh; overflow-y:auto; position:relative;
+    padding:2rem; box-shadow:var(--shadow-md);
+}
+body.dark-mode .modal-content { border-color:rgba(255,255,255,0.1); }
+.modal-close { position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--muted); }
+.modal-close:hover { color:var(--primary); }
+.detail-header { display:flex; gap:1.5rem; align-items:center; margin-bottom:1.5rem; }
+.detail-avatar { font-size:4rem; width:100px; height:100px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.detail-section { margin-bottom:1.5rem; }
+.detail-section h4 { color:var(--primary); margin-bottom:0.8rem; display:flex; align-items:center; gap:0.5rem; }
+.section-icon { font-size:1.2rem; }
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
+.info-item { display:flex; flex-direction:column; }
+.info-item .label { color:var(--muted); font-size:0.85rem; }
+.info-item .value { font-weight:600; }
+.detail-stats { display:flex; gap:1.5rem; justify-content:center; text-align:center; }
+.detail-stat .value { font-size:1.5rem; font-weight:bold; color:var(--primary); display:block; }
+.detail-stat .label { color:var(--muted); font-size:0.85rem; }
+
+/* Toast */
+.toast {
+    position:fixed; bottom:2rem; left:50%; transform:translateX(-50%);
+    background:rgba(74,74,74,0.95); color:white; padding:1rem 2rem; border-radius:50px;
+    font-size:0.95rem; box-shadow:0 8px 30px rgba(0,0,0,0.2); z-index:3000;
+    opacity:0; pointer-events:none; transition:opacity 0.3s;
+}
+.toast.show { opacity:1; }
+
+/* 页面底部 */
+.footer { text-align:center; padding:2rem; color:var(--muted); border-top:1px solid #eee; margin-top:3rem; }
+body.dark-mode .footer { border-top-color:rgba(255,255,255,0.1); }
+
+/* 响应式 */
+@media (max-width:900px) {
+    .main-content { grid-template-columns:1fr; }
+    .navbar { flex-wrap:wrap; gap:0.5rem; }
+    .nav-links { flex-wrap:wrap; }
+}
+@media (max-width:600px) {
+    .main-content { padding:1rem; }
+    .live-stats { grid-template-columns:1fr; }
+    .navbar { padding:0.8rem 1rem; }
+    .feed-btn { padding:0.8rem 2rem; font-size:1rem; }
+    .cats-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-brand">
+        <div>🐱 MeowGuard</div>
+        <div class="nav-tagline">城市流浪猫生命共同体</div>
+    </div>
+    <div class="nav-links">
+        <a href="#live" class="active">🏠 直播间</a>
+        <a href="#cats">🐱 猫咪档案</a>
+        <button id="darkModeToggle" title="切换深色模式">🌙</button>
+    </div>
+</nav>
+
+<main class="main-content">
+
+    <!-- 直播区 -->
+    <div class="live-section" id="live">
+        <div class="live-header">
+            <h1>📹 MeowGuard 直播间</h1>
+            <div class="live-status">
+                <span class="live-dot"></span>
+                <span>直播中</span>
+            </div>
+        </div>
+
+        <div class="video-container">
+            <div class="video-placeholder" id="videoPlaceholder">
+                <div class="cat-animation">
+                    <div class="cat-silhouette" id="liveCatEmoji">🐱</div>
+                    <div class="live-cat-name" id="liveCatTitle">咪咪的直播间</div>
+                    <div class="live-cat-location" id="liveCatLocation">📍 A 区 - 教学楼后</div>
+                </div>
+                <p class="video-tip">点击投喂，为守护添一份口粮与关注</p>
+            </div>
+        </div>
+
+        <div class="live-stats">
+            <div class="stat-item">
+                <span class="stat-value" id="onlineViewers">1,234</span>
+                <span class="stat-label">在线观众</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="todayFeeds">156</span>
+                <span class="stat-label">今日投喂</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="totalFeeds">791</span>
+                <span class="stat-label">累计投喂</span>
+            </div>
+        </div>
+
+        <div class="feed-section">
+            <button class="feed-btn" id="feedBtn">
+                <span class="feed-icon">🍖</span>
+                <span class="feed-text">投喂猫咪</span>
+                <span class="feed-cost">模拟投喂</span>
+            </button>
+            <div class="feed-animation" id="feedAnimation"></div>
+        </div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-card">
+            <h3>📋 投喂记录</h3>
+            <div class="feed-logs" id="feedLogs">
+                <div class="log-item">
+                    <span class="log-time">刚刚</span>
+                    <span class="log-user">系统</span>
+                    <span class="log-action">直播间已开启</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <h3>🌡️ 环境监测</h3>
+            <div class="env-data">
+                <div class="env-item">
+                    <span class="env-label">温度</span>
+                    <span class="env-value" id="temperature">22°C</span>
+                </div>
+                <div class="env-item">
+                    <span class="env-label">湿度</span>
+                    <span class="env-value" id="humidity">58%</span>
+                </div>
+                <div class="env-item">
+                    <span class="env-label">空气质量</span>
+                    <span class="env-value good">良好</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <h3>🐱 当前猫咪</h3>
+            <div class="current-cat">
+                <div class="cat-avatar" id="sidebarCatEmoji">🐱</div>
+                <div class="cat-info">
+                    <div class="cat-name" id="sidebarCatName">咪咪</div>
+                    <div class="cat-nickname" id="sidebarCatNickname">小区一霸</div>
+                    <div class="cat-status" id="sidebarCatBadges">
+                        <span class="status-badge healthy">健康</span>
+                        <span class="status-badge neutered">已绝育</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 猫咪档案 -->
+<div class="cats-section" id="cats" style="padding:2rem; max-width:1600px; margin:0 auto;">
+    <h2>🐱 猫咪档案</h2>
+    <div class="cats-grid" id="catsGrid"></div>
+</div>
+
+<!-- 详情弹窗 -->
+<div class="modal" id="detailModal">
+    <div class="modal-content">
+        <button class="modal-close" id="modalClose">&times;</button>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 底部 -->
+<div class="footer">
+    <p>🐱 MeowGuard · 城市流浪猫生命共同体</p>
+    <p style="font-size:0.85rem;">基于 AIoT 的流浪猫科学救助与社区共治平台 | 演示版本</p>
+</div>
+
+<script>
+// ===== 数据 =====
+const CATS = [
+    { id:1, name:'咪咪', nickname:'小区一霸', gender:'female', age:'2 岁', color:'橘白相间',
+      location:'A 区 - 教学楼后', status:'free', description:'性格活泼，喜欢晒太阳，经常在教学楼后的小花园出现。',
+      feed_count:156, views:1234, health:'健康', neutered:true, adoption_ready:false },
+    { id:2, name:'小黑', nickname:'夜行侠', gender:'male', age:'1 岁半', color:'纯黑',
+      location:'B 区 - 食堂门口', status:'free', description:'夜间活跃，白天喜欢躲在车底下，对人比较警惕。',
+      feed_count:89, views:876, health:'健康', neutered:false, adoption_ready:true },
+    { id:3, name:'雪球', nickname:'棉花糖', gender:'female', age:'3 岁', color:'纯白',
+      location:'C 区 - 图书馆前', status:'free', description:'非常亲人，会主动蹭人，是图书馆的常驻猫咪。',
+      feed_count:234, views:2156, health:'健康', neutered:true, adoption_ready:true },
+    { id:4, name:'大橘', nickname:'十斤橘', gender:'male', age:'4 岁', color:'橘色',
+      location:'D 区 - 操场角落', status:'free', description:'体重超标，需要控制饮食，但依然很贪吃。',
+      feed_count:312, views:1890, health:'需关注', neutered:true, adoption_ready:false }
+];
+
+let currentCatId = 1;
+let feedLogs = [];
+
+// ===== 工具函数 =====
+function $(id) { return document.getElementById(id); }
+function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function fmtNum(n) { return (n||0).toLocaleString('zh-CN'); }
+
+// ===== Toast =====
+function showToast(msg, dur=2000) {
+    const t = $('toast'); t.textContent=msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+// ===== 深色模式 =====
+const DarkMode = {
+    init() {
+        const saved = localStorage.getItem('darkMode');
+        if (saved==='true') this.enable();
+        else if (saved==='false') this.disable();
+        else if (window.matchMedia('(prefers-color-scheme:dark)').matches) this.enable();
+        $('darkModeToggle').addEventListener('click', ()=>this.toggle());
+    },
+    enable() { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode','true'); },
+    disable() { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode','false'); },
+    toggle() { document.body.classList.contains('dark-mode') ? this.disable() : this.enable(); }
+};
+
+// ===== 直播 =====
+function getCat(cid) { return CATS.find(c=>c.id===cid); }
+
+function applyCat(cat) {
+    const emojiMap = {'黑':'🐱','白':'🐱','橘':'🐱','灰':'🐱','花':'🐱','相间':'🐱'};
+    const emoji = emojiMap[cat.color?.charAt(0)] || '🐱';
+    $('liveCatEmoji').textContent = emoji;
+    $('liveCatTitle').textContent = cat.name + '的直播间';
+    $('liveCatLocation').textContent = '📍 ' + cat.location;
+    $('sidebarCatEmoji').textContent = emoji;
+    $('sidebarCatName').textContent = cat.name;
+    $('sidebarCatNickname').textContent = cat.nickname || '';
+    $('todayFeeds').textContent = fmtNum(cat.feed_count);
+    $('sidebarCatBadges').innerHTML = `
+        <span class="status-badge ${cat.health==='健康'?'healthy':'unavailable'}">${esc(cat.health)}</span>
+        ${cat.neutered?'<span class="status-badge neutered">已绝育</span>':'<span class="status-badge">未绝育</span>'}
+        ${cat.adoption_ready?'<span class="status-badge adoption">🏠 可领养</span>':''}
+    `;
+}
+
+function feed() {
+    const cat = getCat(currentCatId);
+    if (!cat) return;
+    cat.feed_count++;
+    $('todayFeeds').textContent = fmtNum(cat.feed_count);
+    
+    // 粒子特效
+    const a = $('feedAnimation');
+    const parts = ['🍖','❤️','✨','🐟','💕','🎉','⭐'];
+    a.innerHTML = parts.sort(()=>Math.random()-0.5).slice(0,5).map((p,i)=>
+        `<div class="feed-particle" style="--tx:${(i-2)*30}px;--ty:${-80-Math.random()*40}px;--delay:${i*0.05}s">${p}</div>`
+    ).join('');
+    setTimeout(()=>a.innerHTML='', 1000);
+    
+    // 猫咪跳动
+    const emoji = $('liveCatEmoji');
+    emoji.classList.remove('cat-bounce');
+    void emoji.offsetWidth;
+    emoji.classList.add('cat-bounce');
+    
+    // 记录日志
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+    feedLogs.unshift({ time:timeStr, user:'云养人', cat:cat.name, id:cat.id });
+    if (feedLogs.length > 20) feedLogs.length = 20;
+    renderFeedLogs();
+    
+    showToast(`✅ 投喂成功！${cat.name} 收到了你的心意`);
+}
+
+function renderFeedLogs() {
+    $('feedLogs').innerHTML = feedLogs.length>0
+        ? feedLogs.map(l=>`<div class="log-item">
+            <span class="log-time">${l.time}</span>
+            <span class="log-user">${esc(l.user)}</span>
+            <span class="log-action">投喂了${esc(l.cat)}</span>
+        </div>`).join('')
+        : '<div class="log-item"><span class="log-action">暂无投喂记录</span></div>';
+}
+
+// ===== 猫咪档案 =====
+function getBg(cat) {
+    const map = {
+        '黑':'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)',
+        '白':'linear-gradient(135deg,#fff,#f0f0f0,#e0e0e0)',
+        '橘':'linear-gradient(135deg,#f6d365,#fda085,#ff6b6b)',
+        '灰':'linear-gradient(135deg,#4b6cb7,#182848,#0d1b2a)',
+    };
+    return map[cat.color?.charAt(0)] || 'linear-gradient(135deg,#f5f7fa,#c3cfe2)';
+}
+
+function renderCats() {
+    $('catsGrid').innerHTML = CATS.map(cat => `
+        <div class="cat-card" onclick="showDetail(${cat.id})">
+            <div class="cat-card-image" style="--cat-bg:${getBg(cat)}">
+                <div class="cat-card-emoji">🐱</div>
+            </div>
+            <div class="cat-card-info">
+                <h3 class="cat-card-name">${esc(cat.name)}</h3>
+                <p class="cat-card-nickname">"${esc(cat.nickname||'')}"</p>
+                <div class="cat-tags">
+                    <span class="tag">${cat.gender==='male'?'♂':'♀'} ${esc(cat.age)}</span>
+                    <span class="tag">${esc(cat.color)}</span>
+                    ${cat.neutered?'<span class="tag">已绝育</span>':''}
+                    ${cat.adoption_ready?'<span class="tag">可领养</span>':''}
+                </div>
+                <p class="cat-card-location">📍 ${esc(cat.location)}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showDetail(catId) {
+    const cat = getCat(catId);
+    if (!cat) return;
+    $('modalBody').innerHTML = `
+        <div class="detail-header">
+            <div class="detail-avatar" style="background:${getBg(cat)}">🐱</div>
+            <div>
+                <h2>${esc(cat.name)}</h2>
+                <p style="color:var(--muted);font-style:italic;">"${esc(cat.nickname||'')}"</p>
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4><span class="section-icon">📋</span> 基本信息</h4>
+            <div class="info-grid">
+                <div class="info-item"><span class="label">性别</span><span class="value">${cat.gender==='male'?'♂ 雄性':'♀ 雌性'}</span></div>
+                <div class="info-item"><span class="label">年龄</span><span class="value">${esc(cat.age)}</span></div>
+                <div class="info-item"><span class="label">毛色</span><span class="value">${esc(cat.color)}</span></div>
+                <div class="info-item"><span class="label">绝育状态</span><span class="value">${cat.neutered?'✅ 已绝育':'❌ 未绝育'}</span></div>
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4><span class="section-icon">📍</span> 位置信息</h4>
+            <p style="margin-bottom:0.5rem;">📍 ${esc(cat.location)}</p>
+            <p style="color:var(--muted);font-size:0.85rem;">⚠️ 为保护猫咪安全，精确位置仅对认证志愿者可见</p>
+        </div>
+        <div class="detail-section">
+            <h4><span class="section-icon">📝</span> 喵生简介</h4>
+            <p>${esc(cat.description)}</p>
+        </div>
+        <div class="detail-section">
+            <h4><span class="section-icon">📊</span> 互动数据</h4>
+            <div class="detail-stats">
+                <div class="detail-stat"><span class="value">${fmtNum(cat.feed_count)}</span><span class="label">累计投喂</span></div>
+                <div class="detail-stat"><span class="value">${fmtNum(cat.views)}</span><span class="label">累计观看</span></div>
+                <div class="detail-stat"><span class="value">${cat.neutered?'✅':'⏳'}</span><span class="label">${cat.neutered?'已绝育':'待绝育'}</span></div>
+            </div>
+        </div>
+        ${cat.adoption_ready ? `<div style="text-align:center;margin-top:1rem;">
+            <button onclick="showToast('🏠 领养功能即将上线！');$('detailModal').classList.remove('show');document.body.style.overflow='';" 
+                style="background:var(--primary);color:white;border:none;padding:0.8rem 2rem;border-radius:50px;font-size:1rem;cursor:pointer;">
+                🏠 申请领养 ${esc(cat.name)}
+            </button>
+        </div>` : ''}
+    `;
+    $('detailModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+// ===== 环境模拟 =====
+function updateEnv() {
+    $('temperature').textContent = (20 + Math.random()*4-2).toFixed(1) + '°C';
+    $('humidity').textContent = Math.floor(55 + Math.random()*10-5) + '%';
+}
+setInterval(updateEnv, 10000);
+
+// ===== 初始化 =====
+document.addEventListener('DOMContentLoaded', ()=>{
+    DarkMode.init();
+    const initialCat = getCat(currentCatId);
+    if (initialCat) applyCat(initialCat);
+    renderFeedLogs();
+    renderCats();
+
+    // 投喂按钮
+    $('feedBtn').addEventListener('click', ()=>feed());
+
+    // 弹窗关闭
+    $('modalClose').addEventListener('click', ()=>{ $('detailModal').classList.remove('show'); document.body.style.overflow=''; });
+    $('detailModal').addEventListener('click', (e)=>{ if(e.target===$('detailModal')){ $('detailModal').classList.remove('show'); document.body.style.overflow=''; } });
+
+    // ESC 关闭
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ $('detailModal').classList.remove('show'); document.body.style.overflow=''; } });
+
+    // 更新总投喂数
+    $('totalFeeds').textContent = fmtNum(CATS.reduce((s,c)=>s+c.feed_count,0));
+});
+</script>
+
+</body>
+</html>
