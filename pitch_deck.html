@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeowGuard · 城市流浪猫生命共同体 — 投资人路演</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.min.css">
+<style>
+  :root {
+    --warm-orange: #FF8C42;
+    --deep-blue: #1E2A38;
+    --soft-white: #F5F0EB;
+    --accent-green: #4CAF50;
+  }
+
+  .reveal {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  .reveal .slides section {
+    background: linear-gradient(160deg, #1a2332 0%, #0d1117 100%);
+    color: var(--soft-white);
+    padding: 40px 60px;
+    text-align: left;
+  }
+
+  /* ===== 封面页 ===== */
+  .reveal .slide-cover {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(160deg, #1a2332 0%, #0d1117 60%, #1a2332 100%) !important;
+  }
+  .slide-cover .logo-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+  .slide-cover h1 {
+    font-size: 56px !important;
+    font-weight: 800 !important;
+    color: var(--warm-orange) !important;
+    text-transform: none !important;
+    margin-bottom: 8px !important;
+  }
+  .slide-cover .subtitle {
+    font-size: 24px;
+    color: #8899aa;
+    margin-bottom: 30px;
+    font-style: italic;
+  }
+  .slide-cover .tagline {
+    font-size: 20px;
+    color: var(--warm-orange);
+    opacity: 0.85;
+    border-top: 1px solid rgba(255,140,66,0.3);
+    padding-top: 16px;
+    display: inline-block;
+  }
+
+  /* ===== 通用排版 ===== */
+  .reveal h2 {
+    font-size: 40px !important;
+    font-weight: 700 !important;
+    color: var(--warm-orange) !important;
+    text-transform: none !important;
+    margin-bottom: 30px !important;
+    position: relative;
+    padding-bottom: 12px;
+  }
+  .reveal h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: var(--warm-orange);
+    border-radius: 2px;
+  }
+  .reveal h3 {
+    font-size: 28px !important;
+    font-weight: 600 !important;
+    color: #ffe0c0 !important;
+    text-transform: none !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* ===== 数据大字 ===== */
+  .big-number {
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--warm-orange);
+    line-height: 1;
+  }
+  .big-number-label {
+    font-size: 20px;
+    color: #8899aa;
+    margin-top: 4px;
+  }
+
+  /* ===== 痛点四象限 ===== */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .pain-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .pain-card .emoji {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+  .pain-card .role {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--warm-orange);
+    margin-bottom: 4px;
+  }
+  .pain-card .pain {
+    font-size: 15px;
+    color: #aab;
+  }
+
+  /* ===== 两栏布局 ===== */
+  .two-col {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+  }
+  .two-col > div {
+    flex: 1;
+  }
+
+  /* ===== 架构图 ===== */
+  .arch-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .arch-layer {
+    background: rgba(255,255,255,0.06);
+    border-left: 4px solid var(--warm-orange);
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .arch-layer .icon {
+    font-size: 32px;
+  }
+  .arch-layer .label {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffe0c0;
+  }
+  .arch-layer .desc {
+    font-size: 14px;
+    color: #8899aa;
+    margin-top: 2px;
+  }
+
+  /* ===== 用户画像表格 ===== */
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  .user-table th {
+    background: rgba(255,140,66,0.2);
+    color: var(--warm-orange);
+    padding: 10px 12px;
+    font-weight: 700;
+    text-align: left;
+    border-bottom: 2px solid rgba(255,140,66,0.4);
+  }
+  .user-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #ccd;
+    vertical-align: top;
+  }
+  .user-table tr:hover td {
+    background: rgba(255,255,255,0.04);
+  }
+  .user-table .emoji-col {
+    font-size: 24px;
+    text-align: center;
+    width: 40px;
+  }
+
+  /* ===== 飞轮 ===== */
+  .flywheel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    margin: 20px 0;
+  }
+  .flywheel-node {
+    text-align: center;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid rgba(255,140,66,0.3);
+  }
+  .flywheel-node .n-icon {
+    font-size: 32px;
+  }
+  .flywheel-node .n-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--warm-orange);
+    margin-top: 4px;
+  }
+  .flywheel-node .n-sub {
+    font-size: 12px;
+    color: #8899aa;
+    margin-top: 2px;
+  }
+  .flywheel-arrow {
+    font-size: 28px;
+    color: var(--warm-orange);
+    opacity: 0.6;
+  }
+
+  /* ===== 路线图 ===== */
+  .timeline {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+  }
+  .timeline-phase {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 20px;
+    border-top: 4px solid var(--warm-orange);
+    position: relative;
+  }
+  .timeline-phase .phase-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--warm-orange);
+    margin-bottom: 10px;
+  }
+  .timeline-phase .phase-time {
+    font-size: 13px;
+    color: #8899aa;
+    margin-bottom: 12px;
+  }
+  .timeline-phase ul {
+    font-size: 14px;
+    color: #ccd;
+    padding-left: 18px;
+    margin: 0;
+  }
+  .timeline-phase ul li {
+    margin-bottom: 6px;
+  }
+
+  /* ===== 对比表格 ===== */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  .compare-table th {
+    background: rgba(255,140,66,0.15);
+    color: var(--warm-orange);
+    padding: 10px 14px;
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 2px solid rgba(255,140,66,0.4);
+  }
+  .compare-table th:first-child {
+    text-align: left;
+  }
+  .compare-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #ccd;
+    text-align: center;
+  }
+  .compare-table td:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: #ffe0c0;
+  }
+  .check { color: var(--accent-green); font-weight: 700; }
+  .cross { color: #f44336; }
+
+  /* ===== 结尾页 ===== */
+  .slide-end {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .slide-end h2 {
+    font-size: 44px !important;
+    color: var(--warm-orange) !important;
+  }
+  .slide-end h2::after { display: none; }
+  .slide-end .contact {
+    margin-top: 30px;
+    font-size: 18px;
+    color: #8899aa;
+  }
+  .slide-end .qr-hint {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #667;
+  }
+
+  /* ===== 演讲者备注可见性 ===== */
+  .reveal .slides section .speaker-note-placeholder {
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ===== 第 1 页：封面 ===== -->
+<section class="slide-cover">
+  <div class="logo-icon">🐱</div>
+  <h1>MeowGuard</h1>
+  <div class="subtitle">城市流浪猫生命共同体</div>
+  <div class="tagline">"看见每一只猫，守护每一个家。"</div>
+
+  <aside class="notes">
+    各位投资人好，我是 MeowGuard 的创始人。今天我想用 8 分钟，向各位展示一个被忽视的 5000 万级社会问题，
+    以及我们如何用 AIoT 技术将它变成一个可持续的公益+商业闭环。
+    我们做的不是宠物 App，也不是智能硬件——而是一套城市流浪猫的科学治理基础设施。
+  </aside>
+</section>
+
+<!-- ===== 第 2 页：社会问题 ===== -->
+<section>
+  <h2>一个被忽视的 5000 万级社会问题</h2>
+  <div class="two-col" style="margin-top: 20px;">
+    <div>
+      <div class="big-number">5000-8000万</div>
+      <div class="big-number-label">中国流浪猫数量</div>
+      <div style="margin-top: 24px;">
+        <span class="big-number" style="font-size: 48px;">42 万只</span>
+        <div class="big-number-label">1 对未绝育猫 × 7 年 → 后代数量</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; border-left: 3px solid #f44336;">
+        <div style="font-size: 18px; font-weight: 700; color: #f44336;">🐾 生态影响</div>
+        <div style="font-size: 14px; color: #aab; margin-top: 6px;">流浪猫年均捕杀鸟类 13-30 亿只<br>被 IUCN 列为"最具破坏力入侵物种"之一</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; border-left: 3px solid #ff9800;">
+        <div style="font-size: 18px; font-weight: 700; color: #ff9800;">🏘️ 社区矛盾</div>
+        <div style="font-size: 14px; color: #aab; margin-top: 6px;">宠物类投诉占社区投诉总量逐年攀升<br>物业面临"业主施压 vs 舆论风险"两难</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; border-left: 3px solid var(--warm-orange);">
+        <div style="font-size: 18px; font-weight: 700; color: var(--warm-orange);">💰 市场空白</div>
+        <div style="font-size: 14px; color: #aab; margin-top: 6px;">宠物经济 2793 亿，但流浪猫管理长期无技术方案<br>纯依赖志愿者人力，效率低、不可持续</div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    先看一组数据。中国流浪猫 5000 到 8000 万只，而且还在以指数级增长——一对未绝育的猫，7 年内可以繁殖出 42 万只后代。
+    这不仅是动物福利问题，更是生态问题、社区治理问题。
+    但我看到的是：2793 亿的宠物经济里，流浪猫管理这个赛道几乎空白。
+    现有的方案只有一种——靠志愿者用爱发电。一周跑三个小区，手动记录、手动投喂、手动找人领养。不可持续。
+    这就是我们的机会。
+  </aside>
+</section>
+
+<!-- ===== 第 3 页：四方困局 ===== -->
+<section>
+  <h2>四方困局：同一个痛点，四种无助</h2>
+  <div class="pain-grid">
+    <div class="pain-card">
+      <div class="emoji">🧑‍💻</div>
+      <div class="role">爱心云养人</div>
+      <div class="pain">"想投喂找不到猫<br>怕钱被浪费"</div>
+    </div>
+    <div class="pain-card">
+      <div class="emoji">🏢</div>
+      <div class="role">社区 / 物业</div>
+      <div class="pain">"猫扰民投诉不断<br>管也不是不管也不是"</div>
+    </div>
+    <div class="pain-card">
+      <div class="emoji">🩺</div>
+      <div class="role">动保志愿者</div>
+      <div class="pain">"找猫绝育领养全靠腿<br>一个人当三个人用"</div>
+    </div>
+    <div class="pain-card">
+      <div class="emoji">🏠</div>
+      <div class="role">潜在领养人</div>
+      <div class="pain">"想领养但怕星期猫<br>怕有病、怕养不活"</div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    我们深度访谈了 40 多位各方角色后发现：这不是一类人的问题，是四类人的问题。
+    云养人想奉献爱心但缺透明度；物业被投诉压得喘不过气；志愿者跑断腿效率极低；领养人对"星期猫"充满恐惧。
+    而且最关键的是——这四类人的需求，交汇在同一个场景：流浪猫。
+    这意味着：如果我们能用一个方案同时服务好这四类人，就能形成一个非常稳固的飞轮。
+  </aside>
+</section>
+
+<!-- ===== 第 4 页：解决方案 ===== -->
+<section>
+  <h2>MeowGuard：AIoT 驱动的生命共同体</h2>
+  <div class="arch-stack" style="margin-top: 10px;">
+    <div class="arch-layer">
+      <div class="icon">📱</div>
+      <div>
+        <div class="label">云 · 小程序 / Web</div>
+        <div class="desc">直播投喂 · 猫咪日记 · 领养匹配 · 社区治理看板</div>
+      </div>
+    </div>
+    <div style="text-align: center; font-size: 20px; color: var(--warm-orange);">⬆️ 数据上云 · AI 分析 · LLM 生成报告 ⬆️</div>
+    <div class="arch-layer">
+      <div class="icon">⚡</div>
+      <div>
+        <div class="label">边 · 边缘 AI 计算</div>
+        <div class="desc">设备端 YOLOv8 猫检测 · 猫脸识别 · 行为姿态分析</div>
+      </div>
+    </div>
+    <div style="text-align: center; font-size: 20px; color: var(--warm-orange);">⬆️ 实时推理 · 隐私保护 · 低带宽 ⬆️</div>
+    <div class="arch-layer">
+      <div class="icon">🏠</div>
+      <div>
+        <div class="label">端 · 智能猫屋</div>
+        <div class="desc">高清夜视摄像头 · 自动出粮口 · 温湿度传感器 · 太阳能供电 · IP65 防水</div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    我们的方案很简单：在小区、校园、公园部署智能猫屋，构建端-边-云一体化系统。
+    端侧是硬件猫屋——摄像头、出粮口、传感器、太阳能供电。
+    边侧是设备端 AI——所有猫脸识别、行为分析都在本地完成，不上传视频，保护隐私。
+    云端是用户端应用——小程序和 Web，承载直播、投喂、领养、治理四大功能模块。
+    这个架构的优势是：数据越多、AI 越准；部署越多、护城河越深。
+  </aside>
+</section>
+
+<!-- ===== 第 5 页：C 端产品 ===== -->
+<section>
+  <h2>云吸猫 + 透明投喂：C 端流量入口</h2>
+  <div class="two-col">
+    <div>
+      <div style="font-size: 15px; color: #8899aa; margin-bottom: 12px;">👤 用户体验闭环</div>
+      <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 8px; line-height: 2;">
+        <span style="color: var(--warm-orange);">①</span> 打开小程序，看实时直播<br>
+        <span style="color: var(--warm-orange);">②</span> AI 检测到猫 → 解锁投喂按钮<br>
+        <span style="color: var(--warm-orange);">③</span> 支付小额费用（¥1/份）<br>
+        <span style="color: var(--warm-orange);">④</span> 收到投喂视频回执 → 自动记入"爱心账单"<br>
+        <span style="color: var(--warm-orange);">⑤</span> 第二天收到 AI 生成的"猫咪日记"
+      </div>
+      <div style="margin-top: 16px; background: rgba(255,140,66,0.1); padding: 14px; border-radius: 8px; border-left: 3px solid var(--accent-green);">
+        <div style="font-size: 14px; color: var(--accent-green); font-weight: 700;">💰 定价策略</div>
+        <div style="font-size: 13px; color: #aab; margin-top: 4px;">
+          小份 ¥1/次 | 中份 ¥5/6 次 | 大份 ¥18/25 次 | 守护套餐 ¥68/100 次<br>
+          月捐计划：¥9.9/月 → 成为某只猫的"守护者" + 生成守护证书
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 15px; color: #8899aa; margin-bottom: 12px;">📊 资金流向透明看板</div>
+      <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <div style="background: var(--warm-orange); width: 40%; height: 8px; border-radius: 4px;"></div>
+          <span style="font-size: 14px; color: #ccd;">🍖 猫粮采购 40%</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <div style="background: #5c9ce6; width: 35%; height: 8px; border-radius: 4px;"></div>
+          <span style="font-size: 14px; color: #ccd;">🔧 设备运维 35%</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <div style="background: var(--accent-green); width: 25%; height: 8px; border-radius: 4px;"></div>
+          <span style="font-size: 14px; color: #ccd;">🏥 绝育基金 25%</span>
+        </div>
+      </div>
+      <div style="margin-top: 16px; font-style: italic; font-size: 14px; color: #aab; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px;">
+        💬 "小花今天来了 3 次，最喜欢晚上 10 点那顿。<br>它吃得很安心，还对着摄像头打了个哈欠。"<br>
+        <span style="font-size: 12px; color: #667;">—— AI 每日自动生成 · 猫咪日记</span>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    这是我们的核心 C 端体验。用户打开小程序看到实时直播，AI 检测到有猫时才开放投喂——这解决了两个问题：一是防止没人时投喂导致食物变质，二是让每次投喂都有"回执视频"，给用户即时的情感回报。
+    定价很低——1 块钱就能投一次，但我们测算过：如果一台猫屋每天有 30 次投喂，月收入约 900 元，覆盖运维成本有余。
+    再加上透明看板公示资金去向——40% 猫粮、35% 运维、25% 绝育基金——用户能看到自己的钱实际帮助了哪只猫。
+    猫咪日记是我们的情感黏性设计——AI 每天自动生成一段拟人化文案，让用户和特定猫咪建立情感连接。
+  </aside>
+</section>
+
+<!-- ===== 第 6 页：AI 猫脸识别 ===== -->
+<section>
+  <h2>AI 猫脸识别：一只猫的"数字身份证"</h2>
+  <div class="two-col">
+    <div>
+      <div style="font-size: 15px; color: #8899aa; margin-bottom: 12px;">🧠 核心能力</div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 6px;">
+          <span style="color: var(--warm-orange); font-weight: 700;">① 自动建档</span><br>
+          <span style="font-size: 13px; color: #aab;">新猫首次出现 → YOLOv8 检测 + ResNet 微调识别 → 分配唯一 ID → 记录毛色/耳标/行为</span>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 6px;">
+          <span style="color: var(--warm-orange); font-weight: 700;">② 绝育识别 + 科学投喂</span><br>
+          <span style="font-size: 13px; color: #aab;">AI 精准识别"剪耳"标记 → 未绝育猫提高投喂优先级 → 引导资源流向 TNR</span>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 6px;">
+          <span style="color: var(--warm-orange); font-weight: 700;">③ 健康预警</span><br>
+          <span style="font-size: 13px; color: #aab;">OpenPose 骨骼点检测 → 跛行/消瘦/打喷嚏 → 三级过滤 → 自动通知合作医院</span>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 6px;">
+          <span style="color: var(--warm-orange); font-weight: 700;">④ 数据护城河</span><br>
+          <span style="font-size: 13px; color: #aab;">每个试点积累真实流浪猫场景数据 → 逐步构建自有训练集 → 识别精度持续提升</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 15px; color: #8899aa; margin-bottom: 12px;">📊 可视化资源分配</div>
+      <div style="background: rgba(255,255,255,0.04); padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="font-size: 14px; color: #aab; margin-bottom: 12px;">本月资源流向</div>
+        <div style="display: flex; height: 200px; align-items: flex-end; justify-content: center; gap: 30px;">
+          <div style="text-align: center;">
+            <div style="background: var(--warm-orange); width: 80px; height: 144px; border-radius: 8px 8px 0 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 10px;">
+              <span style="font-size: 28px; font-weight: 900;">72%</span>
+            </div>
+            <div style="font-size: 13px; color: #ccd; margin-top: 8px;">未绝育猫</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="background: #5c9ce6; width: 80px; height: 56px; border-radius: 8px 8px 0 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 10px;">
+              <span style="font-size: 28px; font-weight: 900;">28%</span>
+            </div>
+            <div style="font-size: 13px; color: #ccd; margin-top: 8px;">已绝育猫</div>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: #667; margin-top: 12px;">
+          💡 已绝育猫保留自然捕食能力更健康 · 可使用"爱心加餐"单独投喂
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    AI 猫脸识别是我们的技术壁垒。市面上的猫脸识别产品几乎都是面向品种猫、正面照——但流浪猫场景完全不同，多角度、夜间、脏污。
+    我们从 YOLOv8 做物体检测、ResNet 微调做个体识别，在设备端完成推理——不上传视频，保护隐私。
+    特别要说的是"绝育识别与科学投喂"这个设计：AI 识别剪耳标记，已绝育猫降低投喂优先级、未绝育猫提高优先级——引导资源流向 TNR。这是我们跟纯公益组织最大的差异化——不是无差别投喂，而是用 AI 做资源的最优分配。
+    而且每部署一个猫屋，就积累一批真实数据，这是别人无法复制的护城河。
+  </aside>
+</section>
+
+<!-- ===== 第 7 页：领养闭环 ===== -->
+<section>
+  <h2>领养闭环：从"不敢领"到"放心领"</h2>
+  <div style="display: flex; gap: 20px; align-items: stretch;">
+    <div style="flex: 1; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 20px;">
+      <div style="font-size: 18px; font-weight: 700; color: var(--warm-orange); margin-bottom: 14px;">🔍 严选机制</div>
+      <div style="font-size: 14px; color: #ccd; line-height: 2;">
+        📋 真实档案：生活视频 + 健康报告 + AI 性格画像<br>
+        📝 结构化问卷：AI 语义匹配 → 匹配度评分<br>
+        🩺 远程视频复核：合作兽医 15 分钟评估<br>
+        💰 可退还保障金：300 元，完成 D+30 回访后退还
+      </div>
+    </div>
+    <div style="flex: 1.5; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 20px;">
+      <div style="font-size: 18px; font-weight: 700; color: var(--warm-orange); margin-bottom: 14px;">📅 三阶段过渡（轻人力）</div>
+      <div style="font-size: 13px; color: #ccd; line-height: 1.8;">
+        <span style="color: var(--warm-orange);">第 1-7 天 线上试养</span> → 每日上传短视频 → AI 自动分析猫咪状态<br>
+        <span style="color: var(--warm-orange);">第 8-30 天 月度过渡</span> → 每周上传视频+问卷 → AI 检测居家环境安全<br>
+        <span style="color: var(--warm-orange);">第 31-90 天 稳定期</span> → 每月反馈 → 自动签署电子确认书<br>
+        <span style="color: var(--warm-orange);">第 90 天+ 终身关怀</span> → 年度健康报告 + 疫苗/绝育提醒
+      </div>
+      <div style="margin-top: 12px; font-size: 12px; color: var(--accent-green); background: rgba(76,175,80,0.1); padding: 8px; border-radius: 4px;">
+        ✅ AI 自动核验为主，仅在异常时触发人工介入——大幅减少志愿者上门次数
+      </div>
+    </div>
+  </div>
+  <div style="margin-top: 16px; text-align: center;">
+    <span style="font-size: 32px; letter-spacing: 12px; color: var(--warm-orange); opacity: 0.5;">建档 → 匹配 → 试养 → 确认 → 关怀</span>
+  </div>
+
+  <aside class="notes">
+    领养是流浪猫救助的终极目标——让猫不再流浪。但现有领养流程有两个核心问题：领养人怕星期猫、志愿者人力跟不上。
+    我们做了三件事：第一，每只猫有完整的数字档案——不是几张照片，是 AI 分析的行为数据、健康趋势、性格画像。第二，三阶段过渡——AI 自动核验照片和视频，只在异常时才通知人工介入。第三，300 元可退还保障金——既筛选诚意又保护猫咪。
+    从第 1 天到第 90 天，AI 全程参与核验，让一个人管理 20 只猫的领养变成可能。
+  </aside>
+</section>
+
+<!-- ===== 第 8 页：社区共治 ===== -->
+<section>
+  <h2>社区共治：B/G 端付费逻辑</h2>
+  <div class="two-col">
+    <div>
+      <div style="font-size: 15px; color: #8899aa; margin-bottom: 12px;">⚙️ 投诉治理自动化闭环</div>
+      <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 8px; line-height: 2; font-size: 14px; color: #ccd;">
+        🔔 居民提交"猫扰民"投诉<br>
+        ⬇️<br>
+        🤖 AI 自动生成《治理建议报告》<br>
+        <span style="font-size: 12px; color: #8899aa;">含禁止清单 + 替代方案 + 两周执行计划</span><br>
+        ⬇️<br>
+        📧 推送物业 + 7 天追踪 + 未响应自动升级街道办
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 15px; color: #8899aa; margin-bottom: 12px;">📈 治理 ROI 看板（物业付费锚点）</div>
+      <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-size: 13px; color: #aab;">投诉率</span>
+          <span style="font-size: 14px; color: var(--accent-green);">↓ 65%</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-size: 13px; color: #aab;">猫口数</span>
+          <span style="font-size: 14px; color: var(--accent-green);">↓ 42% (3个月)</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-size: 13px; color: #aab;">绝育率</span>
+          <span style="font-size: 14px; color: var(--warm-orange);">↑ 从 15% 到 78%</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-size: 13px; color: #aab;">居民满意度</span>
+          <span style="font-size: 14px; color: var(--accent-green);">↑ 4.2/5</span>
+        </div>
+      </div>
+      <div style="margin-top: 12px; font-size: 13px; color: #aab; text-align: center;">
+        🎯 这是物业愿意付费的根本原因：<br><span style="color: var(--warm-orange); font-weight: 700;">数据化地证明"治理有效"</span>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    这是 B 端和 G 端的付费逻辑。物业最怕什么？业主投诉。但现有的投诉处理方式是——接到投诉→找猫→抓猫→被爱猫人士骂。两难。
+    我们给物业的不是一个抓猫工具，而是一套"柔性治理"方案：居民投诉进来，AI 自动生成一份专业的治理建议报告，包含禁止清单和替代方案。物业只需要按报告执行，14 天内闭环。
+    更重要的是，我们给他们一个治理 ROI 看板——投诉率下降 65%、猫口数下降 42%、绝育率上升到 78%。这些数据直接证明物业的工作有效，这就是他们愿意签年约付费的根本原因。
+  </aside>
+</section>
+
+<!-- ===== 第 9 页：用户画像 ===== -->
+<section>
+  <h2>四类用户，一个增长飞轮</h2>
+  <table class="user-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>他们是谁</th>
+        <th>市场量级</th>
+        <th>核心价值</th>
+        <th>变现方式</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="emoji-col">🧑‍💻</td>
+        <td><strong>云养人</strong><br><span style="font-size:12px;color:#8899aa;">Z世代·年轻白领·爱猫但没条件养</span></td>
+        <td><span style="color:var(--warm-orange);font-weight:700;">3 亿+</span><br><span style="font-size:12px;color:#667;">云吸猫用户</span></td>
+        <td style="font-size:13px;">可视化投喂回执<br>猫咪日记·情感连接<br>透明资金看板</td>
+        <td>猫粮套餐 ¥1-68<br>月捐 ¥9.9/月</td>
+      </tr>
+      <tr>
+        <td class="emoji-col">🏢</td>
+        <td><strong>社区/物业</strong><br><span style="font-size:12px;color:#8899aa;">小区·园区·商场管理者</span></td>
+        <td><span style="color:var(--warm-orange);font-weight:700;">10 万+</span><br><span style="font-size:12px;color:#667;">物业公司</span></td>
+        <td style="font-size:13px;">投诉自动化处理<br>治理 ROI 看板<br>数据化证明管理有效</td>
+        <td>治理 SaaS<br>¥500-2000/月</td>
+      </tr>
+      <tr>
+        <td class="emoji-col">🩺</td>
+        <td><strong>动保志愿者</strong><br><span style="font-size:12px;color:#8899aa;">个人+动保组织·人力严重不足</span></td>
+        <td><span style="color:var(--warm-orange);font-weight:700;">数十万</span><br><span style="font-size:12px;color:#667;">活跃志愿者</span></td>
+        <td style="font-size:13px;">自动建档 0→1<br>健康预警·降本增效<br>领养智能匹配</td>
+        <td>免费（供给端）<br><span style="font-size:12px;color:#667;">B端收入覆盖</span></td>
+      </tr>
+      <tr>
+        <td class="emoji-col">🏠</td>
+        <td><strong>潜在领养人</strong><br><span style="font-size:12px;color:#8899aa;">想养猫但怕"星期猫"</span></td>
+        <td><span style="color:var(--warm-orange);font-weight:700;">百万级/年</span><br><span style="font-size:12px;color:#667;">增量市场</span></td>
+        <td style="font-size:13px;">真实健康档案<br>AI 辅助匹配<br>三阶段安心过渡</td>
+        <td>保障金 300 元<br><span style="font-size:12px;color:#667;">（可退）</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <aside class="notes">
+    这张表是投资人最关心的——你的用户到底是谁、有多大、怎么变现。
+    四类用户中，C 端云养人是流量入口——3 亿云吸猫用户，我们不需要全部转化，1% 就是 300 万。
+    物业是我们验证过的付费意愿最强的群体——他们每年处理宠物投诉花的人力成本远高于每月 1000 块。
+    志愿者是供给端——免费但关键，他们提供线下运营能力，而我们的工具让他们效率翻倍。
+    领养人是闭环出口——每成功领养一只猫，猫屋就少一份负担、多一个成功案例。
+    四类用户形成飞轮：云养人出钱 → 物业出场地 → 志愿者出人力 → 领养人接猫回家。
+  </aside>
+</section>
+
+<!-- ===== 第 10 页：商业模式飞轮 ===== -->
+<section>
+  <h2>商业模式：三方收入飞轮</h2>
+  <div class="flywheel">
+    <div class="flywheel-node">
+      <div class="n-icon">🧑‍💻</div>
+      <div class="n-label">C 端投喂</div>
+      <div class="n-sub">猫粮套餐 + 月捐</div>
+    </div>
+    <div class="flywheel-arrow">→</div>
+    <div class="flywheel-node">
+      <div class="n-icon">🏢</div>
+      <div class="n-label">B 端冠名</div>
+      <div class="n-sub">品牌联名猫屋</div>
+    </div>
+    <div class="flywheel-arrow">→</div>
+    <div class="flywheel-node">
+      <div class="n-icon">🏛️</div>
+      <div class="n-label">G 端 SaaS</div>
+      <div class="n-sub">治理数据报表</div>
+    </div>
+  </div>
+  <div style="text-align: center; margin-top: 24px; font-size: 14px; color: #8899aa;">
+    <span style="color: var(--warm-orange);">C 端</span> 产生流量和数据 →
+    <span style="color: #5c9ce6;">B 端</span> 获得品牌曝光和用户触达 →
+    <span style="color: var(--accent-green);">G 端</span> 获得治理效果证明 →
+    反哺 <span style="color: var(--warm-orange);">C 端</span> 用户体验
+  </div>
+
+  <aside class="notes">
+    我们的商业模型不是单一收入源，而是三方飞轮。
+    C 端投喂是小额高频的现金流——1 块钱一次，但用户粘性极高。我们测算：一台猫屋日均 30 次投喂，月流水约 900 元。
+    B 端品牌冠名是利润来源——猫粮品牌、宠物品牌愿意为什么付费？精准触达爱猫人群。一个猫屋一年的冠名费可以覆盖该点位的全部运维成本。
+    G 端治理 SaaS 是稳定收入——物业按年签约，边际成本几乎为零。
+    三个收入源互相强化：C 端流量越大 → B 端冠名价值越高 → G 端数据越有说服力 → C 端体验越好。
+  </aside>
+</section>
+
+<!-- ===== 第 11 页：竞争壁垒 ===== -->
+<section>
+  <h2>竞争壁垒：我们 vs 他们</h2>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>能力维度</th>
+        <th style="color: var(--warm-orange);">MeowGuard</th>
+        <th>传统 TNR 组织</th>
+        <th>宠物 App / 社区</th>
+        <th>智能喂食器厂商</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>硬件终端</td>
+        <td class="check">✅ 自研智能猫屋</td>
+        <td class="cross">✗ 无</td>
+        <td class="cross">✗ 无</td>
+        <td class="check">✅ 室内喂食器</td>
+      </tr>
+      <tr>
+        <td>AI 猫脸识别</td>
+        <td class="check">✅ 自研·流浪猫场景</td>
+        <td class="cross">✗ 纯人工</td>
+        <td class="cross">✗ 品种猫数据集</td>
+        <td class="cross">✗ 无</td>
+      </tr>
+      <tr>
+        <td>科学投喂策略</td>
+        <td class="check">✅ 绝育状态区分</td>
+        <td class="check">✅ 有</td>
+        <td class="cross">✗ 无</td>
+        <td class="cross">✗ 无差别出粮</td>
+      </tr>
+      <tr>
+        <td>领养匹配</td>
+        <td class="check">✅ AI 三阶段核验</td>
+        <td class="check">✅ 人工匹配</td>
+        <td class="check">✅ 信息发布</td>
+        <td class="cross">✗ 无</td>
+      </tr>
+      <tr>
+        <td>社区治理工具</td>
+        <td class="check">✅ 投诉→报告→闭环</td>
+        <td class="cross">✗ 无</td>
+        <td class="cross">✗ 无</td>
+        <td class="cross">✗ 无</td>
+      </tr>
+      <tr>
+        <td>隐私合规</td>
+        <td class="check">✅ 分级坐标+边缘计算</td>
+        <td class="cross">✗ 不涉及</td>
+        <td class="cross">✗ 用户上传位置</td>
+        <td class="cross">✗ 不涉及</td>
+      </tr>
+      <tr>
+        <td>数据积累</td>
+        <td class="check">✅ 流浪猫自有数据集</td>
+        <td class="cross">✗ 纸质/Excel</td>
+        <td class="check">✅ 用户行为数据</td>
+        <td class="cross">✗ 设备日志</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <aside class="notes">
+    很多人会问：你们跟宠物 App 有什么不同？跟智能喂食器厂商有什么不同？
+    这张表说得很清楚——没有人同时做硬件+AI+治理工具。宠物 App 有流量没硬件，喂食器厂商有硬件没 AI，TNR 组织有经验没技术。
+    我们的壁垒不是单一技术的领先，而是六个能力的交叉组合。而且交叉点越多，追上的难度是指数级上升的。
+    特别要强调数据积累——流浪猫场景的训练数据全网几乎没有，我们从第一个试点就开始积累，这是任何后来者都无法绕过的壁垒。
+  </aside>
+</section>
+
+<!-- ===== 第 12 页：路线图 ===== -->
+<section>
+  <h2>路线图：从验证到规模化</h2>
+  <div class="timeline">
+    <div class="timeline-phase">
+      <div class="phase-title">🔬 Phase 1：MVP</div>
+      <div class="phase-time">0-6 个月 · 当前阶段</div>
+      <ul>
+        <li>组装 3-5 台原型机</li>
+        <li>完成直播+投喂+AI 识别闭环</li>
+        <li>1-2 个社区/校园试点</li>
+        <li>验证核心指标：识别准确率 ≥85%、用户 7 日留存 ≥30%</li>
+      </ul>
+    </div>
+    <div class="timeline-phase">
+      <div class="phase-title">📈 Phase 2：试点运营</div>
+      <div class="phase-time">6-18 个月</div>
+      <ul>
+        <li>迭代 V2.0 硬件 · 生产 50 台</li>
+        <li>上线猫咪日记+透明看板+领养系统</li>
+        <li>10+ 点位部署</li>
+        <li>验证变现：日活用户、付费转化率、领养成功率</li>
+      </ul>
+    </div>
+    <div class="timeline-phase">
+      <div class="phase-title">🚀 Phase 3：扩展</div>
+      <div class="phase-time">18-36 个月</div>
+      <ul>
+        <li>硬件量产降本</li>
+        <li>城市级部署 100+ 点位</li>
+        <li>B/G 端付费规模化</li>
+        <li>开放猫屋加盟（社区自购+平台运营）</li>
+      </ul>
+    </div>
+  </div>
+
+  <aside class="notes">
+    我们的路线图分三个阶段。当前在 Phase 1——用最少的钱验证技术闭环。
+    3 到 5 台原型机、1 到 2 个试点、核心只看两个指标：AI 能不能准确认出猫、用户会不会留下来。
+    第一阶段跑通后，Phase 2 扩到 10 个点位、50 台设备、验证付费意愿——这是 Pre-A 轮融资要支撑的阶段。
+    Phase 3 是真正的规模化，但那是后话。我们现在的 focus 是：用最小的成本、最快的速度，拿到第一组真实数据。
+  </aside>
+</section>
+
+<!-- ===== 第 13 页：团队与融资 ===== -->
+<section>
+  <h2>团队 & 融资需求</h2>
+  <div class="two-col">
+    <div>
+      <div style="font-size: 18px; font-weight: 700; color: var(--warm-orange); margin-bottom: 14px;">👥 创始团队</div>
+      <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 8px;">
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 16px; font-weight: 700; color: #ffe0c0;">[创始人姓名]</div>
+          <div style="font-size: 13px; color: #8899aa;">CEO · 产品 & 战略</div>
+          <div style="font-size: 12px; color: #667; margin-top: 4px;">[背景：如 X 年产品经验/Y 校毕业/曾创业经历]</div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 16px; font-weight: 700; color: #ffe0c0;">[技术合伙人]</div>
+          <div style="font-size: 13px; color: #8899aa;">CTO · AI & IoT 架构</div>
+          <div style="font-size: 12px; color: #667; margin-top: 4px;">[背景：如 CV/边缘计算/嵌入式经验]</div>
+        </div>
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: #ffe0c0;">[运营/动保顾问]</div>
+          <div style="font-size: 13px; color: #8899aa;">动保合作 & 社区运营</div>
+          <div style="font-size: 12px; color: #667; margin-top: 4px;">[背景：如动保组织合作经验]</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 18px; font-weight: 700; color: var(--warm-orange); margin-bottom: 14px;">💰 融资计划</div>
+      <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 8px;">
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 14px; color: #8899aa;">轮次</div>
+          <div style="font-size: 28px; font-weight: 900; color: var(--warm-orange);">天使轮 / 种子轮</div>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 14px; color: #8899aa;">金额</div>
+          <div style="font-size: 28px; font-weight: 900; color: var(--warm-orange);">[待填写] 万元</div>
+        </div>
+        <div>
+          <div style="font-size: 14px; color: #8899aa; margin-bottom: 6px;">用途分配</div>
+          <div style="font-size: 13px; color: #ccd; line-height: 1.8;">
+            🔧 硬件原型 & 试点部署 · 40%<br>
+            💻 软件研发 & AI 训练 · 35%<br>
+            📋 运营 & 商务拓展 · 15%<br>
+            📦 预留 · 10%
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    最后一页是团队和融资。团队这边你需要填上实际信息，我留了占位。
+    融资部分——天使轮建议融 [X] 万，出让 [X]%。
+    重点要说清楚用途：40% 硬件——因为我们不是纯软件公司，需要原型机和试点部署；35% 研发——AI 训练和平台迭代；15% 运营和 BD——拿物业合同和合作医院。
+    我想强调一点：我们不是在做一个"有情怀的公益项目"，而是在做一个"可持续的商业闭环"。流浪猫问题是真实存在的、痛点是精准的、付费意愿是验证过的。我们需要的是第一笔资金，跑出第一组数据。
+  </aside>
+</section>
+
+<!-- ===== 第 14 页：结尾 ===== -->
+<section class="slide-end">
+  <div style="font-size: 72px; margin-bottom: 16px;">🐱</div>
+  <h2>让科技温暖每一个流浪的生命</h2>
+  <div class="contact">
+    <div style="margin-bottom: 8px;">MeowGuard · 城市流浪猫生命共同体</div>
+    <div>📧 [your@email.com]</div>
+    <div>📱 [手机号 / 微信]</div>
+  </div>
+  <div class="qr-hint">扫码体验 MeowGuard 小程序 Demo →</div>
+
+  <aside class="notes">
+    谢谢各位。我们相信：科技不应该只服务人类，也应该温暖那些被遗忘的生命。
+    MeowGuard 不是做一个 App 或一个硬件，而是在铺一条路——让每一只流浪猫都能被看见，让每一个有爱心的人都能参与，让每一个社区都能科学地与人猫和谐共处。
+    我们已经在路上。期待与各位一起，让这个世界对流浪猫更温柔一点。
+    谢谢。下面进入 Q&A。
+  </aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    width: 1280,
+    height: 720,
+    margin: 0.1,
+    transition: 'fade',
+    transitionSpeed: 'default',
+    backgroundTransition: 'fade',
+    center: false,
+    controls: true,
+    progress: true,
+    // 按 S 键打开演讲者视图（含备注）
+    showNotes: false,
+  });
+</script>
+</body>
+</html>
