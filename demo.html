@@ -9,16 +9,18 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
     --bg: #f7fbff; --bg-1:#e0f7fa; --bg-2:#fff0f5; --bg-3:#fff9c4;
-    --card:rgba(255,255,255,0.95); --text:#4a4a4a; --muted:#8e8e8e;
-    --primary:#ff8fb0; --primary-2:#8be1db; --danger:#ff6b6b;
-    --shadow-sm:0 8px 24px rgba(255,143,176,0.12);
-    --shadow-md:0 16px 40px rgba(139,225,219,0.20);
-    --radius-lg:28px; --radius-md:20px; --radius-sm:16px;
+    --card:rgba(255,255,255,0.95); --text:#2d3436; --muted:#636e72;
+    --primary:#ff8fb0; --primary-2:#8be1db; --primary-3:#74b9ff; --danger:#ff6b6b;
+    --warning:#fdcb6e; --success:#55efc4; --accent:#a29bfe;
+    --shadow-sm:0 8px 24px rgba(0,0,0,0.06);
+    --shadow-md:0 16px 40px rgba(0,0,0,0.10);
+    --radius-lg:24px; --radius-md:16px; --radius-sm:10px;
     --ring:0 0 0 4px rgba(255,143,176,0.25);
+    --navbar-h:64px;
 }
 body.dark-mode {
-    --bg:#1a1a2e; --bg-1:#16213e; --bg-2:#1f1f3a; --bg-3:#2d2d4a;
-    --card:rgba(30,30,50,0.95); --text:#e0e0e0; --muted:#a0a0a0;
+    --bg:#0f0f1a; --bg-1:#1a1a2e; --bg-2:#1f1f3a; --bg-3:#2d2d4a;
+    --card:rgba(22,22,40,0.95); --text:#e0e0e0; --muted:#a0a0a0;
     --shadow-sm:0 8px 24px rgba(0,0,0,0.3);
     --shadow-md:0 16px 40px rgba(0,0,0,0.4);
 }
@@ -30,391 +32,595 @@ a { text-decoration:none; color:inherit; }
 
 /* ===== 导航栏 ===== */
 .navbar {
-    background:rgba(255,255,255,0.85); backdrop-filter:blur(14px);
-    padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center;
-    box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:1000;
-    border-bottom:3px solid rgba(255,255,255,0.9);
+    position:sticky; top:0; z-index:1000; height:var(--navbar-h);
+    background:rgba(255,255,255,0.92); backdrop-filter:blur(14px);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 2rem; box-shadow:var(--shadow-sm); border-bottom:1px solid rgba(0,0,0,0.06);
 }
-body.dark-mode .navbar { background:rgba(30,30,50,0.85); border-bottom-color:rgba(255,255,255,0.1); }
-.nav-brand { display:flex; flex-direction:column; gap:0.1rem; font-size:1.5rem; font-weight:bold; color:var(--primary); }
-.nav-tagline { font-size:0.78rem; font-weight:600; color:var(--muted); }
-.nav-links { display:flex; gap:1rem; align-items:center; }
-.nav-links a, .nav-links button {
-    color:var(--muted); font-weight:600; padding:0.6rem 1.2rem; border-radius:20px;
-    transition:all 0.3s; border:3px solid rgba(255,255,255,0.9); background:rgba(255,255,255,0.6);
-    cursor:pointer; font-size:1rem; font-family:inherit;
+body.dark-mode .navbar { background:rgba(22,22,40,0.92); border-bottom-color:rgba(255,255,255,0.08); }
+.nav-brand { display:flex; align-items:center; gap:0.6rem; font-size:1.35rem; font-weight:800; color:var(--primary); }
+.nav-brand .icon { font-size:1.6rem; }
+.nav-brand .tagline { font-size:0.7rem; font-weight:500; color:var(--muted); display:block; line-height:1; }
+.nav-actions { display:flex; align-items:center; gap:0.5rem; }
+.nav-actions button {
+    background:rgba(255,255,255,0.6); border:1px solid rgba(0,0,0,0.08); border-radius:20px;
+    padding:0.45rem 1rem; cursor:pointer; font-size:0.85rem; font-weight:600; color:var(--text);
+    transition:all 0.2s; font-family:inherit;
 }
-.nav-links a.active, .nav-links a:hover, .nav-links button:hover {
-    background:var(--primary); color:white; border-color:var(--primary);
-    box-shadow:0 4px 12px rgba(255,143,176,0.3); transform:translateY(-2px);
-}
-body.dark-mode .nav-links a, body.dark-mode .nav-links button {
-    background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1);
-}
-body.dark-mode .nav-links a.active, body.dark-mode .nav-links a:hover, body.dark-mode .nav-links button:hover {
-    background:var(--primary); border-color:var(--primary);
-}
+.nav-actions button:hover { background:var(--primary); color:#fff; border-color:var(--primary); box-shadow:0 4px 12px rgba(255,143,176,0.3); }
+body.dark-mode .nav-actions button { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.1); }
 
-/* ===== 主内容 ===== */
-.main-content { display:grid; grid-template-columns:1fr 350px; gap:2rem; padding:2rem; max-width:1600px; margin:0 auto; }
+/* ===== 模块标签导航 ===== */
+.module-tabs {
+    display:flex; gap:0; overflow-x:auto; padding:0 2rem;
+    background:var(--card); border-bottom:1px solid rgba(0,0,0,0.06);
+    position:sticky; top:var(--navbar-h); z-index:999;
+    scrollbar-width:none;
+}
+.module-tabs::-webkit-scrollbar { display:none; }
+body.dark-mode .module-tabs { border-bottom-color:rgba(255,255,255,0.08); }
+.module-tab {
+    padding:0.8rem 1.2rem; cursor:pointer; font-size:0.88rem; font-weight:600;
+    color:var(--muted); border-bottom:3px solid transparent; white-space:nowrap;
+    transition:all 0.25s; font-family:inherit; background:none; border-top:none; border-left:none; border-right:none;
+}
+.module-tab:hover { color:var(--text); }
+.module-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
 
-/* 直播区域 */
-.live-section {
-    background:var(--card); border:3px solid rgba(255,255,255,0.9);
-    border-radius:var(--radius-lg); padding:1.5rem; box-shadow:var(--shadow-md);
-}
-body.dark-mode .live-section { border-color:rgba(255,255,255,0.1); }
-.live-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
-.live-header h1 { font-size:1.5rem; color:var(--text); }
-.live-status { display:flex; align-items:center; gap:0.5rem; color:var(--muted); font-weight:500; }
-.live-dot {
-    width:12px; height:12px; background:var(--danger); border-radius:50%;
-    animation:pulse 2s infinite; box-shadow:0 0 8px rgba(255,107,107,0.6);
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+/* ===== 主内容容器 ===== */
+.module-panels { padding:2rem; max-width:1400px; margin:0 auto; }
+.module-panel { display:none; }
+.module-panel.active { display:block; animation:fadeIn 0.35s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-.video-container {
-    background:#1f2333; border:1px solid rgba(255,255,255,0.12);
-    border-radius:var(--radius-md); aspect-ratio:16/9; display:flex;
-    align-items:center; justify-content:center; margin-bottom:1.5rem; overflow:hidden;
+/* ===== 卡片通用 ===== */
+.card {
+    background:var(--card); border-radius:var(--radius-lg); padding:1.5rem;
+    box-shadow:var(--shadow-sm); border:1px solid rgba(0,0,0,0.05);
 }
-body.dark-mode .video-container { background:#0f0f1a; }
-.video-placeholder { text-align:center; color:white; }
-.cat-animation { animation:bounce 2s ease-in-out infinite; }
-@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
-.cat-silhouette { font-size:6rem; transition:transform 0.3s; }
-.cat-silhouette.cat-bounce { animation:catBounce 0.5s ease-out; }
+body.dark-mode .card { border-color:rgba(255,255,255,0.06); }
+.card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+.card-header h3 { font-size:1.1rem; display:flex; align-items:center; gap:0.5rem; }
+.card-header .badge { font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:12px; font-weight:600; }
+
+/* ===== 网格布局 ===== */
+.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:1.5rem; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+
+/* ===== 按钮 ===== */
+.btn {
+    display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1.5rem;
+    border-radius:50px; font-weight:600; font-size:0.9rem; cursor:pointer;
+    transition:all 0.25s; font-family:inherit; border:none;
+}
+.btn-primary { background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:0 6px 20px rgba(255,143,176,0.3); }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,143,176,0.4); }
+.btn-outline { border:2px solid var(--primary); color:var(--primary); background:transparent; }
+.btn-outline:hover { background:var(--primary); color:#fff; }
+.btn-sm { padding:0.35rem 0.9rem; font-size:0.8rem; }
+.btn-lg { padding:0.9rem 2.5rem; font-size:1.05rem; }
+
+/* ===== 直播区 ===== */
+.live-video {
+    background:#1a1a2e; border-radius:var(--radius-lg); aspect-ratio:16/9;
+    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+    border:3px solid rgba(255,255,255,0.1);
+}
+.live-video .cat-display { text-align:center; color:#fff; }
+.live-video .cat-emoji-lg { font-size:7rem; transition:transform 0.3s; }
+.live-video .cat-emoji-lg.bounce { animation:catBounce 0.5s ease-out; }
 @keyframes catBounce {
     0%,100%{transform:translateY(0) scale(1)}
-    25%{transform:translateY(-30px) scale(1.1)}
-    50%{transform:translateY(-15px) scale(1.05)}
-    75%{transform:translateY(-5px) scale(1.02)}
+    30%{transform:translateY(-28px) scale(1.1)}
+    60%{transform:translateY(-12px) scale(1.04)}
 }
-.live-cat-name { font-size:1.5rem; margin-top:1rem; }
-.live-cat-location { color:rgba(255,255,255,0.78); margin-top:0.5rem; }
-.video-tip { margin-top:1rem; color:rgba(255,255,255,0.68); font-size:0.9rem; }
+.live-overlay { position:absolute; top:1rem; left:1rem; display:flex; gap:0.5rem; }
+.live-badge {
+    padding:0.3rem 0.8rem; border-radius:12px; font-size:0.75rem; font-weight:700;
+    backdrop-filter:blur(8px);
+}
+.live-badge.live { background:rgba(255,107,107,0.9); color:#fff; animation:pulse 2s infinite; }
+.live-badge.ai { background:rgba(139,225,219,0.9); color:#1a1a2e; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
-.live-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
-.stat-item {
-    background:rgba(255,255,255,0.7); border:1px solid rgba(17,24,39,0.06);
-    padding:1rem; border-radius:8px; text-align:center; transition:transform 0.25s;
+.feed-bar { display:flex; gap:0.8rem; flex-wrap:wrap; align-items:center; }
+.feed-packages { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.pkg-option {
+    padding:0.5rem 1rem; border-radius:20px; cursor:pointer; font-size:0.82rem;
+    font-weight:600; border:2px solid rgba(0,0,0,0.08); background:rgba(255,255,255,0.7);
+    transition:all 0.2s; font-family:inherit; text-align:center;
 }
-body.dark-mode .stat-item { background:rgba(255,255,255,0.05); }
-.stat-item:hover { transform:translateY(-2px); }
-.stat-value { display:block; font-size:1.5rem; font-weight:bold; color:var(--primary); }
-.stat-label { color:var(--muted); font-size:0.9rem; }
+.pkg-option:hover { border-color:var(--primary); }
+.pkg-option.selected { border-color:var(--primary); background:rgba(255,143,176,0.1); }
+body.dark-mode .pkg-option { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.1); }
+.pkg-price { font-size:1.1rem; color:var(--primary); display:block; }
+.pkg-label { font-size:0.7rem; color:var(--muted); }
 
-/* 投喂按钮 */
-.feed-section { text-align:center; position:relative; }
-.feed-btn {
-    background:linear-gradient(135deg,var(--primary),var(--primary-2));
-    border:none; padding:1rem 3rem; border-radius:50px; cursor:pointer;
-    display:inline-flex; align-items:center; gap:0.5rem; font-size:1.1rem; color:white;
-    transition:transform 0.3s, box-shadow 0.3s;
-    box-shadow:0 12px 30px rgba(255,95,162,0.28); position:relative; overflow:hidden;
+/* ===== 猫咪日记 ===== */
+.diary-entry {
+    background:var(--bg-2); border-radius:var(--radius-md); padding:1.2rem;
+    position:relative; margin-bottom:1rem;
 }
-.feed-btn:hover { transform:scale(1.05); box-shadow:0 18px 44px rgba(255,95,162,0.34); }
-.feed-btn:active { transform:scale(0.98); }
-.feed-btn:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
-.feed-cost { font-size:0.9rem; opacity:0.8; }
+.diary-entry .diary-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; }
+.diary-entry .diary-cat { font-weight:700; color:var(--primary); font-size:1rem; }
+.diary-entry .diary-date { font-size:0.8rem; color:var(--muted); }
+.diary-entry .diary-body { font-size:0.95rem; line-height:1.7; color:var(--text); }
+.diary-entry .diary-stats { display:flex; gap:1.2rem; margin-top:0.8rem; font-size:0.82rem; color:var(--muted); }
+.diary-entry .diary-actions { display:flex; gap:0.5rem; margin-top:0.8rem; }
+.tag-ai { background:rgba(139,225,219,0.2); color:#00897b; padding:0.2rem 0.6rem; border-radius:8px; font-size:0.7rem; font-weight:700; }
 
-.feed-animation { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100; }
-.feed-particle {
-    position:absolute; font-size:1.5rem;
-    animation:feedFloat 0.8s ease-out forwards; opacity:0;
-}
-@keyframes feedFloat {
-    0%{ opacity:1; transform:translate(0,0) scale(0.5); }
-    50%{ opacity:1; transform:translate(var(--tx,0), var(--ty,-50px)) scale(1.2); }
-    100%{ opacity:0; transform:translate(var(--tx,0), var(--ty,-100px)) scale(1); }
-}
+/* ===== 透明看板 ===== */
+.fund-visual { display:flex; height:24px; border-radius:12px; overflow:hidden; margin:0.8rem 0; }
+.fund-segment { display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:#fff; }
+.fund-segment.food { background:linear-gradient(90deg,#fdcb6e,#f39c12); }
+.fund-segment.equip { background:linear-gradient(90deg,#74b9ff,#0984e3); }
+.fund-segment.hospital { background:linear-gradient(90deg,#55efc4,#00b894); }
+.fund-legend { display:flex; gap:1.5rem; flex-wrap:wrap; font-size:0.8rem; }
+.fund-legend .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:0.3rem; }
 
-/* 侧边栏 */
-.sidebar { display:flex; flex-direction:column; gap:1rem; }
-.sidebar-card {
-    background:var(--card); border:1px solid rgba(255,255,255,0.6);
-    border-radius:var(--radius-md); padding:1.5rem; box-shadow:var(--shadow-sm);
+/* ===== 领养阶段 ===== */
+.stage-timeline { display:flex; gap:0; margin:1rem 0; position:relative; }
+.stage-timeline::before {
+    content:''; position:absolute; top:24px; left:0; right:0; height:3px;
+    background:rgba(0,0,0,0.08); z-index:0;
 }
-body.dark-mode .sidebar-card { border-color:rgba(255,255,255,0.1); }
-.sidebar-card h3 { font-size:1rem; color:var(--text); margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid #eee; }
-body.dark-mode .sidebar-card h3 { border-bottom-color:rgba(255,255,255,0.1); }
+.stage-node {
+    flex:1; text-align:center; position:relative; z-index:1; cursor:pointer;
+}
+.stage-dot {
+    width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    margin:0 auto 0.5rem; font-size:1.2rem; font-weight:700;
+    border:3px solid rgba(0,0,0,0.08); background:var(--card);
+    transition:all 0.3s;
+}
+.stage-node.active .stage-dot { border-color:var(--primary); background:rgba(255,143,176,0.1); }
+.stage-node.done .stage-dot { border-color:var(--success); background:rgba(85,239,196,0.15); color:var(--success); }
+.stage-label { font-size:0.8rem; font-weight:600; }
+.stage-sub { font-size:0.7rem; color:var(--muted); }
 
-.feed-logs { max-height:200px; overflow-y:auto; }
-.log-item { display:flex; gap:0.5rem; padding:0.5rem 0; font-size:0.85rem; border-bottom:1px solid #f5f5f5; }
-body.dark-mode .log-item { border-bottom-color:rgba(255,255,255,0.1); }
-.log-time { color:rgba(107,114,128,0.85); min-width:50px; }
-.log-user { color:var(--primary); font-weight:500; }
-.log-action { color:var(--muted); flex:1; }
+/* ===== 警报/标签 ===== */
+.alert-row { display:flex; gap:0.8rem; align-items:center; padding:0.8rem 1rem; border-radius:var(--radius-sm); margin-bottom:0.5rem; }
+.alert-row.warning { background:rgba(253,203,110,0.15); border-left:4px solid var(--warning); }
+.alert-row.danger { background:rgba(255,107,107,0.1); border-left:4px solid var(--danger); }
+.alert-row.info { background:rgba(116,185,255,0.1); border-left:4px solid var(--primary-3); }
 
-.env-data { display:flex; flex-direction:column; gap:0.8rem; }
-.env-item { display:flex; justify-content:space-between; align-items:center; }
-.env-label { color:var(--muted); }
-.env-value { font-weight:bold; color:var(--text); }
-.env-value.good { color:#27ae60; }
+/* ===== 进度条 ===== */
+.progress-bar { height:8px; border-radius:4px; background:rgba(0,0,0,0.06); overflow:hidden; margin:0.4rem 0; }
+body.dark-mode .progress-bar { background:rgba(255,255,255,0.06); }
+.progress-fill { height:100%; border-radius:4px; transition:width 0.5s; }
+.progress-fill.pink { background:linear-gradient(90deg,var(--primary),var(--primary-2)); }
+.progress-fill.blue { background:linear-gradient(90deg,var(--primary-3),#6c5ce7); }
 
-.current-cat { display:flex; gap:1rem; align-items:center; }
-.cat-avatar {
-    font-size:3rem; background:rgba(102,126,234,0.12); border-radius:50%;
-    width:70px; height:70px; display:flex; align-items:center; justify-content:center;
+/* ===== 问卷 ===== */
+.quiz-q { margin-bottom:1.2rem; }
+.quiz-q .q-title { font-weight:700; margin-bottom:0.5rem; }
+.quiz-q .q-options { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.q-opt {
+    padding:0.4rem 1rem; border-radius:20px; cursor:pointer; font-size:0.85rem;
+    border:2px solid rgba(0,0,0,0.08); background:rgba(255,255,255,0.5); transition:all 0.2s;
+    font-family:inherit;
 }
-.cat-info { flex:1; }
-.cat-info .cat-name { font-size:1.2rem; font-weight:bold; }
-.cat-nickname { color:var(--muted); font-size:0.9rem; }
-.cat-status { display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap; }
-.status-badge {
-    padding:0.3rem 0.8rem; border-radius:12px; font-size:0.75rem; font-weight:600;
-    box-shadow:0 2px 8px rgba(0,0,0,0.05);
-}
-.status-badge.healthy { background:#e8f5e9; color:#2e7d32; border:1px solid #c8e6c9; }
-.status-badge.neutered { background:#e3f2fd; color:#1565c0; border:1px solid #bbdefb; }
-.status-badge.adoption { background:#fff3e0; color:#ef6c00; border:1px solid #ffe0b2; }
-.status-badge.unavailable { background:#f5f5f5; color:#9e9e9e; border:1px solid #e0e0e0; }
-body.dark-mode .status-badge.healthy { background:rgba(46,125,50,0.2); border-color:rgba(46,125,50,0.4); }
-body.dark-mode .status-badge.neutered { background:rgba(21,101,192,0.2); border-color:rgba(21,101,192,0.4); }
-body.dark-mode .status-badge.adoption { background:rgba(255,152,0,0.2); border-color:rgba(255,152,0,0.4); }
+.q-opt:hover { border-color:var(--primary); }
+.q-opt.selected { border-color:var(--primary); background:rgba(255,143,176,0.15); color:var(--primary); font-weight:600; }
+body.dark-mode .q-opt { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.1); }
 
-/* 猫咪档案 */
-.cats-section { margin-top:2rem; }
-.cats-section h2 { text-align:center; color:var(--text); margin-bottom:1.5rem; font-size:1.5rem; }
-.cats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.5rem; }
-.cat-card {
-    background:var(--card); border:3px solid rgba(255,255,255,0.9); border-radius:24px;
-    overflow:hidden; box-shadow:var(--shadow-sm); transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s;
-    cursor:pointer;
-}
-body.dark-mode .cat-card { border-color:rgba(255,255,255,0.1); }
-.cat-card:hover { transform:translateY(-8px) scale(1.02); box-shadow:var(--shadow-md); }
-.cat-card-image {
-    position:relative; padding:2.5rem 2rem; display:flex; justify-content:center;
-    background:radial-gradient(circle at top left,rgba(255,255,255,0.8),transparent), var(--cat-bg);
-}
-.cat-card-emoji { font-size:5rem; }
-.cat-card-info { padding:1.5rem; }
-.cat-card-name { font-size:1.3rem; margin-bottom:0.3rem; }
-.cat-card-nickname { color:var(--muted); font-style:italic; margin-bottom:0.8rem; }
-.cat-card-location { color:var(--muted); font-size:0.9rem; margin-bottom:0.8rem; }
-.cat-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.8rem; }
-.tag {
-    padding:0.3rem 0.8rem; border-radius:12px; font-size:0.8rem; font-weight:500;
-    background:rgba(102,126,234,0.08); border:1px solid rgba(102,126,234,0.15); color:var(--primary-2);
-}
-body.dark-mode .tag { background:rgba(139,225,219,0.15); border-color:rgba(139,225,219,0.3); }
+/* ===== 统计数字 ===== */
+.stat-row { display:flex; gap:1rem; flex-wrap:wrap; }
+.stat-box { flex:1; min-width:120px; text-align:center; padding:1rem; border-radius:var(--radius-sm); background:rgba(255,255,255,0.5); }
+body.dark-mode .stat-box { background:rgba(255,255,255,0.03); }
+.stat-num { font-size:1.8rem; font-weight:800; color:var(--primary); display:block; }
+.stat-desc { font-size:0.78rem; color:var(--muted); }
 
-/* 详情弹窗 */
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; }
-.modal.show { display:flex; }
-.modal-content {
-    background:var(--card); border:3px solid rgba(255,255,255,0.9); border-radius:var(--radius-lg);
-    max-width:600px; width:90%; max-height:80vh; overflow-y:auto; position:relative;
-    padding:2rem; box-shadow:var(--shadow-md);
-}
-body.dark-mode .modal-content { border-color:rgba(255,255,255,0.1); }
-.modal-close { position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--muted); }
-.modal-close:hover { color:var(--primary); }
-.detail-header { display:flex; gap:1.5rem; align-items:center; margin-bottom:1.5rem; }
-.detail-avatar { font-size:4rem; width:100px; height:100px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.detail-section { margin-bottom:1.5rem; }
-.detail-section h4 { color:var(--primary); margin-bottom:0.8rem; display:flex; align-items:center; gap:0.5rem; }
-.section-icon { font-size:1.2rem; }
-.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
-.info-item { display:flex; flex-direction:column; }
-.info-item .label { color:var(--muted); font-size:0.85rem; }
-.info-item .value { font-weight:600; }
-.detail-stats { display:flex; gap:1.5rem; justify-content:center; text-align:center; }
-.detail-stat .value { font-size:1.5rem; font-weight:bold; color:var(--primary); display:block; }
-.detail-stat .label { color:var(--muted); font-size:0.85rem; }
+/* ===== Modal ===== */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:3000; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal-box { background:var(--card); border-radius:var(--radius-lg); padding:2rem; max-width:600px; width:90%; max-height:85vh; overflow-y:auto; box-shadow:var(--shadow-md); position:relative; }
+.modal-close { position:absolute; top:0.8rem; right:1rem; background:none; border:none; font-size:1.8rem; cursor:pointer; color:var(--muted); }
+.modal-close:hover { color:var(--danger); }
 
-/* Toast */
+/* ===== Toast ===== */
 .toast {
     position:fixed; bottom:2rem; left:50%; transform:translateX(-50%);
-    background:rgba(74,74,74,0.95); color:white; padding:1rem 2rem; border-radius:50px;
-    font-size:0.95rem; box-shadow:0 8px 30px rgba(0,0,0,0.2); z-index:3000;
+    background:rgba(45,52,54,0.95); color:#fff; padding:0.8rem 1.8rem; border-radius:50px;
+    font-size:0.9rem; box-shadow:0 8px 30px rgba(0,0,0,0.2); z-index:4000;
     opacity:0; pointer-events:none; transition:opacity 0.3s;
 }
+body.dark-mode .toast { background:rgba(255,255,255,0.15); }
 .toast.show { opacity:1; }
 
-/* 页面底部 */
-.footer { text-align:center; padding:2rem; color:var(--muted); border-top:1px solid #eee; margin-top:3rem; }
-body.dark-mode .footer { border-top-color:rgba(255,255,255,0.1); }
+/* ===== Footer ===== */
+.footer { text-align:center; padding:2rem; color:var(--muted); border-top:1px solid rgba(0,0,0,0.05); margin-top:3rem; }
+body.dark-mode .footer { border-top-color:rgba(255,255,255,0.08); }
 
-/* 响应式 */
+/* ===== 响应式 ===== */
 @media (max-width:900px) {
-    .main-content { grid-template-columns:1fr; }
-    .navbar { flex-wrap:wrap; gap:0.5rem; }
-    .nav-links { flex-wrap:wrap; }
+    .grid-2, .grid-3 { grid-template-columns:1fr; }
+    .grid-4 { grid-template-columns:repeat(2,1fr); }
+    .module-tabs { padding:0 1rem; }
+    .module-tab { padding:0.6rem 0.8rem; font-size:0.78rem; }
+    .navbar { padding:0 1rem; }
+    .module-panels { padding:1rem; }
+    .feed-bar { flex-direction:column; align-items:stretch; }
+    .stage-timeline { flex-wrap:wrap; gap:0.8rem; }
+    .stage-timeline::before { display:none; }
 }
-@media (max-width:600px) {
-    .main-content { padding:1rem; }
-    .live-stats { grid-template-columns:1fr; }
-    .navbar { padding:0.8rem 1rem; }
-    .feed-btn { padding:0.8rem 2rem; font-size:1rem; }
-    .cats-grid { grid-template-columns:1fr; }
+@media (max-width:500px) {
+    .grid-4 { grid-template-columns:1fr; }
+    .nav-actions { gap:0.3rem; }
+    .nav-actions button { padding:0.35rem 0.7rem; font-size:0.75rem; }
 }
 </style>
 </head>
 <body>
 
+<!-- ===== 导航栏 ===== -->
 <nav class="navbar">
     <div class="nav-brand">
-        <div>🐱 MeowGuard</div>
-        <div class="nav-tagline">城市流浪猫生命共同体</div>
+        <span class="icon">🐱</span>
+        <div>
+            <div>MeowGuard</div>
+            <span class="tagline">城市流浪猫生命共同体</span>
+        </div>
     </div>
-    <div class="nav-links">
-        <a href="#live" class="active">🏠 直播间</a>
-        <a href="#cats">🐱 猫咪档案</a>
-        <button id="darkModeToggle" title="切换深色模式">🌙</button>
+    <div class="nav-actions">
+        <button id="loginBtn">👤 登录</button>
+        <button id="darkModeToggle" title="深色模式">🌙</button>
     </div>
 </nav>
 
-<main class="main-content">
+<!-- ===== 模块标签 ===== -->
+<div class="module-tabs" id="moduleTabs">
+    <button class="module-tab active" data-panel="panel-live">📹 云吸猫</button>
+    <button class="module-tab" data-panel="panel-diary">📖 猫咪日记</button>
+    <button class="module-tab" data-panel="panel-fund">💰 透明看板</button>
+    <button class="module-tab" data-panel="panel-cats">🐱 生命档案</button>
+    <button class="module-tab" data-panel="panel-adopt">🏠 领养系统</button>
+    <button class="module-tab" data-panel="panel-alert">⚠️ 预警中心</button>
+    <button class="module-tab" data-panel="panel-community">🤝 社区共治</button>
+</div>
 
-    <!-- 直播区 -->
-    <div class="live-section" id="live">
-        <div class="live-header">
-            <h1>📹 MeowGuard 直播间</h1>
-            <div class="live-status">
-                <span class="live-dot"></span>
-                <span>直播中</span>
-            </div>
-        </div>
+<!-- ===== 主内容 ===== -->
+<div class="module-panels">
 
-        <div class="video-container">
-            <div class="video-placeholder" id="videoPlaceholder">
-                <div class="cat-animation">
-                    <div class="cat-silhouette" id="liveCatEmoji">🐱</div>
-                    <div class="live-cat-name" id="liveCatTitle">咪咪的直播间</div>
-                    <div class="live-cat-location" id="liveCatLocation">📍 A 区 - 教学楼后</div>
+    <!-- ========== 面板1: 云吸猫直播间 ========== -->
+    <div class="module-panel active" id="panel-live">
+        <div class="grid-2">
+            <div class="card" style="grid-row:span 2;">
+                <div class="card-header">
+                    <h3>📹 实时直播间</h3>
+                    <span class="live-badge live" style="position:static;">● 直播中</span>
                 </div>
-                <p class="video-tip">点击投喂，为守护添一份口粮与关注</p>
-            </div>
-        </div>
-
-        <div class="live-stats">
-            <div class="stat-item">
-                <span class="stat-value" id="onlineViewers">1,234</span>
-                <span class="stat-label">在线观众</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value" id="todayFeeds">156</span>
-                <span class="stat-label">今日投喂</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value" id="totalFeeds">791</span>
-                <span class="stat-label">累计投喂</span>
-            </div>
-        </div>
-
-        <div class="feed-section">
-            <button class="feed-btn" id="feedBtn">
-                <span class="feed-icon">🍖</span>
-                <span class="feed-text">投喂猫咪</span>
-                <span class="feed-cost">模拟投喂</span>
-            </button>
-            <div class="feed-animation" id="feedAnimation"></div>
-        </div>
-    </div>
-
-    <!-- 侧边栏 -->
-    <div class="sidebar">
-        <div class="sidebar-card">
-            <h3>📋 投喂记录</h3>
-            <div class="feed-logs" id="feedLogs">
-                <div class="log-item">
-                    <span class="log-time">刚刚</span>
-                    <span class="log-user">系统</span>
-                    <span class="log-action">直播间已开启</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="sidebar-card">
-            <h3>🌡️ 环境监测</h3>
-            <div class="env-data">
-                <div class="env-item">
-                    <span class="env-label">温度</span>
-                    <span class="env-value" id="temperature">22°C</span>
-                </div>
-                <div class="env-item">
-                    <span class="env-label">湿度</span>
-                    <span class="env-value" id="humidity">58%</span>
-                </div>
-                <div class="env-item">
-                    <span class="env-label">空气质量</span>
-                    <span class="env-value good">良好</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="sidebar-card">
-            <h3>🐱 当前猫咪</h3>
-            <div class="current-cat">
-                <div class="cat-avatar" id="sidebarCatEmoji">🐱</div>
-                <div class="cat-info">
-                    <div class="cat-name" id="sidebarCatName">咪咪</div>
-                    <div class="cat-nickname" id="sidebarCatNickname">小区一霸</div>
-                    <div class="cat-status" id="sidebarCatBadges">
-                        <span class="status-badge healthy">健康</span>
-                        <span class="status-badge neutered">已绝育</span>
+                <div class="live-video">
+                    <div class="live-overlay">
+                        <span class="live-badge live">● LIVE</span>
+                        <span class="live-badge ai">🤖 AI 已识别: 有猫</span>
+                    </div>
+                    <div class="cat-display">
+                        <div class="cat-emoji-lg" id="liveCatEmoji">🐱</div>
+                        <h3 style="margin-top:0.5rem;" id="liveCatTitle">咪咪的直播间</h3>
+                        <p style="color:rgba(255,255,255,0.7);font-size:0.9rem;" id="liveCatLocation">📍 A区 - 教学楼后</p>
+                        <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:0.5rem;">👁️ <span id="liveViewers">1,234</span> 人在看 | 今日投喂 <span id="liveTodayFeeds">156</span> 次</p>
                     </div>
                 </div>
             </div>
+
+            <div class="card">
+                <div class="card-header"><h3>🍖 远程投喂</h3><span class="badge" style="background:rgba(139,225,219,0.2);color:#00897b;">AI防作弊</span></div>
+                <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.8rem;">🤖 AI确认猫屋周围有猫，可以投喂</p>
+                <div class="feed-packages" id="feedPackages">
+                    <button class="pkg-option selected" data-amount="1" data-price="1">
+                        <span class="pkg-price">¥1</span><span class="pkg-label">小份/次</span>
+                    </button>
+                    <button class="pkg-option" data-amount="6" data-price="5">
+                        <span class="pkg-price">¥5</span><span class="pkg-label">6次包</span>
+                    </button>
+                    <button class="pkg-option" data-amount="25" data-price="18">
+                        <span class="pkg-price">¥18</span><span class="pkg-label">25次包</span>
+                    </button>
+                    <button class="pkg-option" data-amount="100" data-price="68">
+                        <span class="pkg-price">¥68</span><span class="pkg-label">守护套餐</span>
+                    </button>
+                </div>
+                <button class="btn btn-primary btn-lg" id="feedBtn" style="width:100%;margin-top:0.8rem;justify-content:center;">🍖 立即投喂</button>
+                <p style="text-align:center;font-size:0.75rem;color:var(--muted);margin-top:0.5rem;" id="feedHint">当前投喂: 咪咪</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h3>📋 实时投喂流水</h3></div>
+                <div id="feedLogs" style="max-height:220px;overflow-y:auto;"></div>
+            </div>
         </div>
     </div>
-</main>
 
-<!-- 猫咪档案 -->
-<div class="cats-section" id="cats" style="padding:2rem; max-width:1600px; margin:0 auto;">
-    <h2>🐱 猫咪档案</h2>
-    <div class="cats-grid" id="catsGrid"></div>
+    <!-- ========== 面板2: 猫咪日记 ========== -->
+    <div class="module-panel" id="panel-diary">
+        <div class="card" style="margin-bottom:1.5rem;">
+            <div class="card-header">
+                <h3>📖 今日猫咪日记 <span class="tag-ai">AI生成</span></h3>
+                <button class="btn btn-outline btn-sm" onclick="refreshDiary()">🔄 刷新日记</button>
+            </div>
+            <div id="diaryContainer"></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3>📸 用户共创·上传猫咪照片</h3></div>
+            <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.8rem;">拍到你认识的猫咪？上传照片经AI猫脸识别匹配后，追加到猫咪日记中，获得积分奖励</p>
+            <div style="display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap;">
+                <button class="btn btn-outline" onclick="simulateUpload()">📸 模拟上传照片</button>
+                <span style="font-size:0.8rem;color:var(--muted);">+20 积分/次</span>
+            </div>
+            <div id="userPhotos" style="margin-top:0.8rem;display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
+        </div>
+    </div>
+
+    <!-- ========== 面板3: 透明看板 ========== -->
+    <div class="module-panel" id="panel-fund">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><h3>💰 本月资金流向</h3><span class="badge" style="background:rgba(85,239,196,0.15);color:#00b894;">实时更新</span></div>
+                <div class="stat-row" style="margin-bottom:1rem;">
+                    <div class="stat-box"><span class="stat-num">¥12,480</span><span class="stat-desc">本月总收入</span></div>
+                    <div class="stat-box"><span class="stat-num">3,842</span><span class="stat-desc">本月投喂次数</span></div>
+                    <div class="stat-box"><span class="stat-num">8</span><span class="stat-desc">本月绝育完成</span></div>
+                </div>
+                <div class="fund-visual">
+                    <div class="fund-segment food" style="width:40%;">40%</div>
+                    <div class="fund-segment equip" style="width:35%;">35%</div>
+                    <div class="fund-segment hospital" style="width:25%;">25%</div>
+                </div>
+                <div class="fund-legend" style="margin-top:0.8rem;">
+                    <span><span class="dot" style="background:#f39c12;"></span> 🍖 猫粮采购 ¥4,992 (40%)</span>
+                    <span><span class="dot" style="background:#0984e3;"></span> 🔧 设备运维 ¥4,368 (35%)</span>
+                    <span><span class="dot" style="background:#00b894;"></span> 🏥 绝育基金 ¥3,120 (25%)</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📊 资源分配可视化</h3><span class="badge" style="background:rgba(253,203,110,0.15);color:#e17055;">投喂优先级</span></div>
+                <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem;">本月资源流向（系统自动分配）</p>
+                <div style="margin:0.8rem 0;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;"><span>未绝育猫（优先）</span><span style="font-weight:700;color:var(--primary);">72%</span></div>
+                    <div class="progress-bar"><div class="progress-fill pink" style="width:72%;"></div></div>
+                </div>
+                <div style="margin:0.8rem 0;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;"><span>已绝育猫（降权）</span><span style="font-weight:700;color:var(--primary-2);">28%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:28%;background:linear-gradient(90deg,var(--primary-2),#00b894);"></div></div>
+                </div>
+                <div style="background:rgba(139,225,219,0.1);padding:0.8rem;border-radius:var(--radius-sm);font-size:0.82rem;color:var(--muted);margin-top:0.8rem;">
+                    💡 已绝育猫已无繁殖压力，适当减少投喂可鼓励其保留自然捕食能力。如需专门投喂某只已绝育猫，可使用「爱心加餐」功能。
+                </div>
+                <button class="btn btn-outline btn-sm" style="margin-top:0.8rem;" onclick="showToast('🍖 爱心加餐功能：消耗积分或小额支付，定向投喂指定猫咪')">❤️ 爱心加餐</button>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>🏥 绝育基金公示</h3></div>
+                <div id="neuterFundLogs" style="max-height:200px;overflow-y:auto;font-size:0.85rem;"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📸 猫粮补货记录</h3></div>
+                <div id="foodRestockLogs" style="max-height:200px;overflow-y:auto;font-size:0.85rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 面板4: 生命档案 ========== -->
+    <div class="module-panel" id="panel-cats">
+        <div class="grid-3" id="catsGrid"></div>
+    </div>
+
+    <!-- ========== 面板5: 领养系统 ========== -->
+    <div class="module-panel" id="panel-adopt">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><h3>📋 领养人筛选问卷</h3><span class="tag-ai">AI语义匹配</span></div>
+                <div id="adoptQuiz"></div>
+                <button class="btn btn-primary" id="submitQuiz" style="margin-top:1rem;width:100%;justify-content:center;">📊 计算匹配度</button>
+                <div id="quizResult" style="margin-top:1rem;"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>🗓️ 分阶段领养过渡计划</h3></div>
+                <div class="stage-timeline">
+                    <div class="stage-node active" onclick="showStageDetail(1)">
+                        <div class="stage-dot">1</div>
+                        <div class="stage-label">线上试养</div>
+                        <div class="stage-sub">第1-7天</div>
+                    </div>
+                    <div class="stage-node" onclick="showStageDetail(2)">
+                        <div class="stage-dot">2</div>
+                        <div class="stage-label">月度过渡</div>
+                        <div class="stage-sub">第8-30天</div>
+                    </div>
+                    <div class="stage-node" onclick="showStageDetail(3)">
+                        <div class="stage-dot">3</div>
+                        <div class="stage-label">稳定期</div>
+                        <div class="stage-sub">第31-90天</div>
+                    </div>
+                    <div class="stage-node" onclick="showStageDetail(4)">
+                        <div class="stage-dot">🏆</div>
+                        <div class="stage-label">终身关怀</div>
+                        <div class="stage-sub">长期</div>
+                    </div>
+                </div>
+                <div id="stageDetail" style="margin-top:1rem;padding:1rem;border-radius:var(--radius-sm);background:rgba(139,225,219,0.08);"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>🔒 保障机制</h3></div>
+                <div style="display:flex;gap:1rem;align-items:center;">
+                    <div style="font-size:3rem;">🔐</div>
+                    <div>
+                        <p style="font-weight:700;">可退还保障金: ¥300</p>
+                        <p style="font-size:0.85rem;color:var(--muted);">顺利完成 D+30 阶段审核后全额退还</p>
+                    </div>
+                </div>
+                <div style="margin-top:0.8rem;font-size:0.82rem;color:var(--muted);">
+                    ✅ 实时水印照片核验 &nbsp;|&nbsp; ✅ AI环境安全检测 &nbsp;|&nbsp; ✅ 异常标记人工介入
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📄 电子领养协议</h3><span class="badge" style="background:rgba(162,155,254,0.15);color:#6c5ce7;">🔗 区块链存证</span></div>
+                <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.8rem;">包含绝育条款、退养流程（须提前14天通知）</p>
+                <button class="btn btn-outline btn-sm" onclick="showToast('📜 电子签名（微信/支付宝实名认证绑定）+ 数据上链存证')">📜 预览协议模板</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 面板6: 预警中心 ========== -->
+    <div class="module-panel" id="panel-alert">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><h3>⚠️ 健康预警</h3><span class="badge" style="background:rgba(255,107,107,0.15);color:var(--danger);">三级过滤机制</span></div>
+                <div id="healthAlerts"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>🔍 猫咪失踪响应SOP</h3></div>
+                <div id="missingAlerts"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>🗺️ 坐标隐私分级</h3></div>
+                <div style="display:flex;flex-direction:column;gap:0.8rem;">
+                    <div style="padding:0.8rem;border-radius:var(--radius-sm);background:rgba(116,185,255,0.08);">
+                        <span style="font-weight:700;">👤 普通用户</span>
+                        <span style="color:var(--muted);margin-left:0.5rem;">仅显示大致区域 "XX小区东门花园"</span>
+                    </div>
+                    <div style="padding:0.8rem;border-radius:var(--radius-sm);background:rgba(85,239,196,0.08);">
+                        <span style="font-weight:700;">✅ 认证志愿者</span>
+                        <span style="color:var(--muted);margin-left:0.5rem;">实名认证后可查看精确GPS</span>
+                    </div>
+                    <div style="padding:0.8rem;border-radius:var(--radius-sm);background:rgba(255,107,107,0.08);">
+                        <span style="font-weight:700;">🚨 紧急模式</span>
+                        <span style="color:var(--muted);margin-left:0.5rem;">重伤/病危时自动向3km内志愿者推送精确坐标</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>🚫 黑名单机制</h3></div>
+                <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.8rem;">AI识别异常行为（投掷异物、驱赶、破坏猫屋），自动截图存证并封禁访问权限</p>
+                <button class="btn btn-outline btn-sm" onclick="showToast('📸 模拟: AI检测到异常行为 → 自动截图 → 封禁该区域访问 → 通知物业')">🔍 查看近期安全事件</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 面板7: 社区共治 ========== -->
+    <div class="module-panel" id="panel-community">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><h3>📝 居民投诉通道</h3><span class="badge" style="background:rgba(253,203,110,0.15);color:#e17055;">柔性调解</span></div>
+                <div style="margin-bottom:0.8rem;">
+                    <label style="font-size:0.85rem;font-weight:600;">投诉类型</label>
+                    <select id="complaintType" style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid rgba(0,0,0,0.1);margin-top:0.3rem;font-family:inherit;">
+                        <option value="noise">夜间叫声</option>
+                        <option value="gather">猫咪聚集</option>
+                        <option value="hygiene">卫生问题</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="submitComplaint()">📤 提交投诉</button>
+                <div id="complaintResult" style="margin-top:0.8rem;"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📋 《治理建议报告》</h3><span class="tag-ai">AI自动生成</span></div>
+                <div id="governanceReport" style="font-size:0.85rem;"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📜 《社区共治协议》核心条款</h3></div>
+                <div style="font-size:0.85rem;">
+                    <p style="margin-bottom:0.5rem;">🚫 <strong>禁止清单：</strong></p>
+                    <ul style="padding-left:1.2rem;color:var(--muted);">
+                        <li>私自捕捉、转移、遗弃猫咪</li>
+                        <li>故意破坏智能猫屋设备</li>
+                        <li>投喂有害食物</li>
+                    </ul>
+                    <p style="margin-top:0.8rem;margin-bottom:0.5rem;">✅ <strong>替代方案：</strong></p>
+                    <ul style="padding-left:1.2rem;color:var(--muted);">
+                        <li>迁移猫屋至低干扰区域</li>
+                        <li>分时段投喂控制聚集</li>
+                        <li>加强TNR绝育计划</li>
+                        <li>安装超声波驱避器</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📊 治理ROI看板</h3></div>
+                <div class="stat-row">
+                    <div class="stat-box"><span class="stat-num">-42%</span><span class="stat-desc">投诉率下降</span></div>
+                    <div class="stat-box"><span class="stat-num">-28%</span><span class="stat-desc">猫口增长率下降</span></div>
+                    <div class="stat-box"><span class="stat-num">85%</span><span class="stat-desc">绝育覆盖率</span></div>
+                </div>
+                <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem;">* 合作社区12个月数据对比</p>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<!-- 详情弹窗 -->
-<div class="modal" id="detailModal">
-    <div class="modal-content">
-        <button class="modal-close" id="modalClose">&times;</button>
+<!-- ===== Modal ===== -->
+<div class="modal-overlay" id="modal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
         <div id="modalBody"></div>
     </div>
 </div>
 
-<!-- Toast -->
+<!-- ===== Toast ===== -->
 <div class="toast" id="toast"></div>
 
-<!-- 底部 -->
+<!-- ===== Footer ===== -->
 <div class="footer">
-    <p>🐱 MeowGuard · 城市流浪猫生命共同体</p>
-    <p style="font-size:0.85rem;">基于 AIoT 的流浪猫科学救助与社区共治平台 | 演示版本</p>
+    <p style="font-weight:700;">🐱 MeowGuard · 城市流浪猫生命共同体</p>
+    <p style="font-size:0.85rem;">基于 AIoT 的流浪猫科学救助与社区共治平台 | 产品原型演示 v2.0</p>
 </div>
 
 <script>
 // ===== 数据 =====
 const CATS = [
-    { id:1, name:'咪咪', nickname:'小区一霸', gender:'female', age:'2 岁', color:'橘白相间',
-      location:'A 区 - 教学楼后', status:'free', description:'性格活泼，喜欢晒太阳，经常在教学楼后的小花园出现。',
-      feed_count:156, views:1234, health:'健康', neutered:true, adoption_ready:false },
-    { id:2, name:'小黑', nickname:'夜行侠', gender:'male', age:'1 岁半', color:'纯黑',
-      location:'B 区 - 食堂门口', status:'free', description:'夜间活跃，白天喜欢躲在车底下，对人比较警惕。',
-      feed_count:89, views:876, health:'健康', neutered:false, adoption_ready:true },
-    { id:3, name:'雪球', nickname:'棉花糖', gender:'female', age:'3 岁', color:'纯白',
-      location:'C 区 - 图书馆前', status:'free', description:'非常亲人，会主动蹭人，是图书馆的常驻猫咪。',
-      feed_count:234, views:2156, health:'健康', neutered:true, adoption_ready:true },
-    { id:4, name:'大橘', nickname:'十斤橘', gender:'male', age:'4 岁', color:'橘色',
-      location:'D 区 - 操场角落', status:'free', description:'体重超标，需要控制饮食，但依然很贪吃。',
-      feed_count:312, views:1890, health:'需关注', neutered:true, adoption_ready:false }
+    { id:1, name:'咪咪', nickname:'小区一霸', gender:'female', age:'2岁', color:'橘白相间',
+      location:'A区 - 教学楼后', description:'性格活泼，喜欢晒太阳，经常在教学楼后的小花园出现。已在此区域生活超过1年。',
+      feed_count:156, views:1234, health:'健康', neutered:true, adoption_ready:false,
+      personality:'活泼', diary_visits:'3次/天', diary_fav_time:'晚上10点' },
+    { id:2, name:'小黑', nickname:'夜行侠', gender:'male', age:'1岁半', color:'纯黑',
+      location:'B区 - 食堂门口', description:'夜间活跃，白天喜欢躲在车底下，对人比较警惕。',
+      feed_count:89, views:876, health:'健康', neutered:false, adoption_ready:true,
+      personality:'警惕', diary_visits:'2次/天', diary_fav_time:'凌晨2点' },
+    { id:3, name:'雪球', nickname:'棉花糖', gender:'female', age:'3岁', color:'纯白',
+      location:'C区 - 图书馆前', description:'非常亲人，会主动蹭人，是图书馆的常驻猫咪。',
+      feed_count:234, views:2156, health:'需关注', neutered:true, adoption_ready:true,
+      personality:'温顺', diary_visits:'5次/天', diary_fav_time:'下午3点' },
+    { id:4, name:'大橘', nickname:'十斤橘', gender:'male', age:'4岁', color:'橘色',
+      location:'D区 - 操场角落', description:'体重超标，需要控制饮食，但依然很贪吃。',
+      feed_count:312, views:1890, health:'需关注', neutered:true, adoption_ready:false,
+      personality:'贪吃', diary_visits:'6次/天', diary_fav_time:'全天' }
 ];
 
-let currentCatId = 1;
-let feedLogs = [];
+const DIARY_TEMPLATES = [
+    "{name}今天来了{visits}次，最喜欢{fav_time}那顿。它吃得很安心，还对着摄像头打了个哈欠。",
+    "今天{name}在猫屋待了{minutes}分钟，看起来心情不错。它舔了舔爪子，然后蜷在暖垫上小睡了片刻。",
+    "{name}今天带了一个新朋友来！两只猫在猫屋附近玩了一会儿，{name}主动让出了出粮口，很有礼貌。",
+    "今天气温较低，{name}来得比平时都早。它在暖垫上待了很久，看得出它很喜欢这个恒温的设计。",
+    "观察到{name}今天有些不对劲——它打了好几个喷嚏。AI已标记为轻度异常，持续监测中。",
+    "{name}今天非常有活力，在摄像头前伸了个懒腰，然后去追一只蝴蝶。这就是流浪猫应有的样子。"
+];
+
+const DIARY_MINUTES = [12, 25, 8, 45, 30, 18, 55, 10];
 
 // ===== 工具函数 =====
 function $(id) { return document.getElementById(id); }
 function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 function fmtNum(n) { return (n||0).toLocaleString('zh-CN'); }
+function rand(min,max) { return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+let selectedPackage = { amount:1, price:1 };
+let feedLogsData = [];
+let toastTimer;
 
 // ===== Toast =====
-function showToast(msg, dur=2000) {
+function showToast(msg, dur=2500) {
+    clearTimeout(toastTimer);
     const t = $('toast'); t.textContent=msg; t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'), dur);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), dur);
 }
+
+// ===== Modal =====
+function openModal(html) { $('modalBody').innerHTML=html; $('modal').classList.add('show'); document.body.style.overflow='hidden'; }
+function closeModal() { $('modal').classList.remove('show'); document.body.style.overflow=''; }
 
 // ===== 深色模式 =====
 const DarkMode = {
@@ -425,72 +631,164 @@ const DarkMode = {
         else if (window.matchMedia('(prefers-color-scheme:dark)').matches) this.enable();
         $('darkModeToggle').addEventListener('click', ()=>this.toggle());
     },
-    enable() { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode','true'); },
-    disable() { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode','false'); },
+    enable() { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode','true'); $('darkModeToggle').textContent='☀️'; },
+    disable() { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode','false'); $('darkModeToggle').textContent='🌙'; },
     toggle() { document.body.classList.contains('dark-mode') ? this.disable() : this.enable(); }
 };
 
-// ===== 直播 =====
+// ===== 模块标签切换 =====
+function switchPanel(panelId) {
+    document.querySelectorAll('.module-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.module-tab').forEach(t=>t.classList.remove('active'));
+    $(panelId).classList.add('active');
+    document.querySelector(`[data-panel="${panelId}"]`).classList.add('active');
+}
+
+// ===== 面板1: 直播 & 投喂 =====
+let currentCatId = 1;
 function getCat(cid) { return CATS.find(c=>c.id===cid); }
 
-function applyCat(cat) {
-    const emojiMap = {'黑':'🐱','白':'🐱','橘':'🐱','灰':'🐱','花':'🐱','相间':'🐱'};
-    const emoji = emojiMap[cat.color?.charAt(0)] || '🐱';
-    $('liveCatEmoji').textContent = emoji;
+function updateLiveDisplay() {
+    const cat = getCat(currentCatId);
+    if (!cat) return;
     $('liveCatTitle').textContent = cat.name + '的直播间';
     $('liveCatLocation').textContent = '📍 ' + cat.location;
-    $('sidebarCatEmoji').textContent = emoji;
-    $('sidebarCatName').textContent = cat.name;
-    $('sidebarCatNickname').textContent = cat.nickname || '';
-    $('todayFeeds').textContent = fmtNum(cat.feed_count);
-    $('sidebarCatBadges').innerHTML = `
-        <span class="status-badge ${cat.health==='健康'?'healthy':'unavailable'}">${esc(cat.health)}</span>
-        ${cat.neutered?'<span class="status-badge neutered">已绝育</span>':'<span class="status-badge">未绝育</span>'}
-        ${cat.adoption_ready?'<span class="status-badge adoption">🏠 可领养</span>':''}
-    `;
+    $('liveTodayFeeds').textContent = fmtNum(cat.feed_count);
+    $('liveViewers').textContent = fmtNum(rand(800, 2500));
+    $('feedHint').textContent = '当前投喂: ' + cat.name;
 }
 
 function feed() {
     const cat = getCat(currentCatId);
     if (!cat) return;
     cat.feed_count++;
-    $('todayFeeds').textContent = fmtNum(cat.feed_count);
-    
-    // 粒子特效
-    const a = $('feedAnimation');
-    const parts = ['🍖','❤️','✨','🐟','💕','🎉','⭐'];
-    a.innerHTML = parts.sort(()=>Math.random()-0.5).slice(0,5).map((p,i)=>
-        `<div class="feed-particle" style="--tx:${(i-2)*30}px;--ty:${-80-Math.random()*40}px;--delay:${i*0.05}s">${p}</div>`
-    ).join('');
-    setTimeout(()=>a.innerHTML='', 1000);
-    
-    // 猫咪跳动
+    updateLiveDisplay();
+
+    // 猫咪跳动动画
     const emoji = $('liveCatEmoji');
-    emoji.classList.remove('cat-bounce');
+    emoji.classList.remove('bounce');
     void emoji.offsetWidth;
-    emoji.classList.add('cat-bounce');
-    
-    // 记录日志
+    emoji.classList.add('bounce');
+
+    // 投喂日志
     const now = new Date();
-    const timeStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-    feedLogs.unshift({ time:timeStr, user:'云养人', cat:cat.name, id:cat.id });
-    if (feedLogs.length > 20) feedLogs.length = 20;
+    const timeStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+    feedLogsData.unshift({ time:timeStr, user:'云养人·'+rand(1000,9999), cat:cat.name, pkg:selectedPackage.amount+'份' });
+    if (feedLogsData.length > 30) feedLogsData.length = 30;
     renderFeedLogs();
-    
-    showToast(`✅ 投喂成功！${cat.name} 收到了你的心意`);
+
+    showToast(`✅ 投喂成功！${cat.name} 收到了 ${selectedPackage.amount} 份猫粮 🍖 (¥${selectedPackage.price})`);
 }
 
 function renderFeedLogs() {
-    $('feedLogs').innerHTML = feedLogs.length>0
-        ? feedLogs.map(l=>`<div class="log-item">
-            <span class="log-time">${l.time}</span>
-            <span class="log-user">${esc(l.user)}</span>
-            <span class="log-action">投喂了${esc(l.cat)}</span>
+    $('feedLogs').innerHTML = feedLogsData.length>0
+        ? feedLogsData.map(l=>`<div style="display:flex;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(0,0,0,0.04);font-size:0.82rem;">
+            <span style="color:var(--muted);min-width:55px;">${l.time}</span>
+            <span style="color:var(--primary);font-weight:600;">${esc(l.user)}</span>
+            <span style="color:var(--text);flex:1;">投喂 ${esc(l.cat)}</span>
+            <span style="color:var(--muted);">${l.pkg}</span>
         </div>`).join('')
-        : '<div class="log-item"><span class="log-action">暂无投喂记录</span></div>';
+        : '<p style="color:var(--muted);text-align:center;padding:1rem;">暂无投喂记录</p>';
 }
 
-// ===== 猫咪档案 =====
+// 投喂套餐选择
+function initFeedPackages() {
+    document.querySelectorAll('#feedPackages .pkg-option').forEach(btn=>{
+        btn.addEventListener('click', function(){
+            document.querySelectorAll('#feedPackages .pkg-option').forEach(b=>b.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedPackage.amount = parseInt(this.dataset.amount);
+            selectedPackage.price = parseInt(this.dataset.price);
+        });
+    });
+}
+
+// ===== 面板2: 猫咪日记 =====
+function generateDiary() {
+    const catsWithDiary = CATS.slice().sort(()=>Math.random()-0.5).slice(0,3);
+    return catsWithDiary.map(cat=>{
+        const template = pick(DIARY_TEMPLATES);
+        const minutes = pick(DIARY_MINUTES);
+        const text = template.replace('{name}', cat.name).replace('{visits}', cat.diary_visits).replace('{fav_time}', cat.diary_fav_time).replace('{minutes}', minutes);
+        return { cat, text, date: new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'}) };
+    });
+}
+
+let currentDiaries = [];
+function renderDiaries() {
+    currentDiaries = generateDiary();
+    $('diaryContainer').innerHTML = currentDiaries.map(d=>`
+        <div class="diary-entry">
+            <div class="diary-header">
+                <span class="diary-cat">🐱 ${esc(d.cat.name)} · ${esc(d.cat.nickname)}</span>
+                <span class="diary-date">📅 ${d.date}</span>
+            </div>
+            <div class="diary-body">${esc(d.text)}</div>
+            <div class="diary-stats">
+                <span>📍 ${esc(d.cat.location)}</span>
+                <span>🔍 ${d.cat.diary_visits} | 性格: ${d.cat.personality}</span>
+            </div>
+            <div class="diary-actions">
+                <span class="tag-ai">🤖 AI 生成</span>
+                <button class="btn btn-outline btn-sm" onclick="switchToCat(d.cat.id)">查看档案 →</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function refreshDiary() {
+    renderDiaries();
+    showToast('📖 猫咪日记已刷新');
+}
+
+function switchToCat(catId) {
+    currentCatId = catId;
+    updateLiveDisplay();
+    switchPanel('panel-live');
+    showToast(`已切换到 ${getCat(catId).name} 的直播间`);
+}
+
+function simulateUpload() {
+    const cat = pick(CATS);
+    const photoId = rand(100,999);
+    const container = $('userPhotos');
+    const div = document.createElement('div');
+    div.style.cssText = 'text-align:center;padding:0.5rem;border-radius:var(--radius-sm);background:rgba(139,225,219,0.1);font-size:0.8rem;';
+    div.innerHTML = `📸 匹配成功!<br><span style="color:var(--primary);font-weight:600;">${esc(cat.name)}</span><br><span style="color:var(--muted);">+20 积分</span>`;
+    container.prepend(div);
+    if (container.children.length > 6) container.removeChild(container.lastChild);
+    showToast(`✅ 照片已匹配到 ${cat.name}！+20 积分已发放`);
+}
+
+// ===== 面板3: 透明看板 =====
+function renderFundLogs() {
+    const neuterLogs = [
+        { cat:'雪球', date:'5月20日', hospital:'合作医院A', cost:'¥380' },
+        { cat:'小黑', date:'5月15日', hospital:'合作医院B', cost:'¥420' },
+        { cat:'花花', date:'5月10日', hospital:'合作医院A', cost:'¥350' },
+        { cat:'灰灰', date:'5月5日', hospital:'合作医院C', cost:'¥400' },
+    ];
+    $('neuterFundLogs').innerHTML = neuterLogs.map(l=>`
+        <div style="padding:0.6rem 0;border-bottom:1px solid rgba(0,0,0,0.04);display:flex;justify-content:space-between;">
+            <span>🐱 ${l.cat} · ${l.hospital}</span>
+            <span style="color:var(--muted);">${l.date} | <strong>${l.cost}</strong></span>
+        </div>
+    `).join('');
+
+    const foodLogs = [
+        { date:'5月22日', qty:'20kg', brand:'皇家猫粮', photo:'已上传' },
+        { date:'5月15日', qty:'15kg', brand:'冠能', photo:'已上传' },
+        { date:'5月8日', qty:'25kg', brand:'皇家猫粮', photo:'已上传' },
+    ];
+    $('foodRestockLogs').innerHTML = foodLogs.map(l=>`
+        <div style="padding:0.6rem 0;border-bottom:1px solid rgba(0,0,0,0.04);display:flex;justify-content:space-between;">
+            <span>📦 ${l.qty} ${l.brand}</span>
+            <span style="color:var(--muted);">${l.date} | 📸 ${l.photo}</span>
+        </div>
+    `).join('');
+}
+
+// ===== 面板4: 生命档案 =====
 function getBg(cat) {
     const map = {
         '黑':'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)',
@@ -503,100 +801,209 @@ function getBg(cat) {
 
 function renderCats() {
     $('catsGrid').innerHTML = CATS.map(cat => `
-        <div class="cat-card" onclick="showDetail(${cat.id})">
-            <div class="cat-card-image" style="--cat-bg:${getBg(cat)}">
-                <div class="cat-card-emoji">🐱</div>
+        <div class="card" style="cursor:pointer;overflow:hidden;padding:0;" onclick="showCatDetail(${cat.id})">
+            <div style="padding:2rem 1rem;display:flex;justify-content:center;background:${getBg(cat)};">
+                <div style="font-size:5rem;">🐱</div>
             </div>
-            <div class="cat-card-info">
-                <h3 class="cat-card-name">${esc(cat.name)}</h3>
-                <p class="cat-card-nickname">"${esc(cat.nickname||'')}"</p>
-                <div class="cat-tags">
-                    <span class="tag">${cat.gender==='male'?'♂':'♀'} ${esc(cat.age)}</span>
-                    <span class="tag">${esc(cat.color)}</span>
-                    ${cat.neutered?'<span class="tag">已绝育</span>':''}
-                    ${cat.adoption_ready?'<span class="tag">可领养</span>':''}
+            <div style="padding:1.2rem;">
+                <h4>${esc(cat.name)} <span style="color:var(--muted);font-weight:400;font-size:0.85rem;">"${esc(cat.nickname)}"</span></h4>
+                <p style="color:var(--muted);font-size:0.82rem;">${cat.gender==='male'?'♂':'♀'} · ${esc(cat.age)} · ${esc(cat.color)}</p>
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.6rem;">
+                    <span class="status-badge" style="padding:0.25rem 0.6rem;border-radius:10px;font-size:0.72rem;font-weight:600;background:${cat.neutered?'rgba(85,239,196,0.15);color:#00b894':'rgba(253,203,110,0.15);color:#e17055'};">${cat.neutered?'✅ 已绝育':'⏳ 未绝育'}</span>
+                    <span class="status-badge" style="padding:0.25rem 0.6rem;border-radius:10px;font-size:0.72rem;font-weight:600;background:${cat.health==='健康'?'rgba(85,239,196,0.15);color:#00b894':'rgba(255,107,107,0.15);color:var(--danger)'};">${cat.health}</span>
+                    ${cat.adoption_ready?'<span class="status-badge" style="padding:0.25rem 0.6rem;border-radius:10px;font-size:0.72rem;font-weight:600;background:rgba(253,203,110,0.15);color:#e17055;">🏠 可领养</span>':''}
                 </div>
-                <p class="cat-card-location">📍 ${esc(cat.location)}</p>
+                <p style="color:var(--muted);font-size:0.78rem;margin-top:0.5rem;">📍 ${esc(cat.location)}</p>
             </div>
         </div>
     `).join('');
 }
 
-function showDetail(catId) {
+function showCatDetail(catId) {
     const cat = getCat(catId);
     if (!cat) return;
-    $('modalBody').innerHTML = `
-        <div class="detail-header">
-            <div class="detail-avatar" style="background:${getBg(cat)}">🐱</div>
-            <div>
-                <h2>${esc(cat.name)}</h2>
-                <p style="color:var(--muted);font-style:italic;">"${esc(cat.nickname||'')}"</p>
-            </div>
+    openModal(`
+        <div style="text-align:center;margin-bottom:1rem;">
+            <div style="font-size:5rem;">🐱</div>
+            <h2>${esc(cat.name)} <span style="color:var(--muted);font-weight:400;">"${esc(cat.nickname)}"</span></h2>
         </div>
-        <div class="detail-section">
-            <h4><span class="section-icon">📋</span> 基本信息</h4>
-            <div class="info-grid">
-                <div class="info-item"><span class="label">性别</span><span class="value">${cat.gender==='male'?'♂ 雄性':'♀ 雌性'}</span></div>
-                <div class="info-item"><span class="label">年龄</span><span class="value">${esc(cat.age)}</span></div>
-                <div class="info-item"><span class="label">毛色</span><span class="value">${esc(cat.color)}</span></div>
-                <div class="info-item"><span class="label">绝育状态</span><span class="value">${cat.neutered?'✅ 已绝育':'❌ 未绝育'}</span></div>
-            </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem;">
+            <div><span style="color:var(--muted);">性别</span><br><strong>${cat.gender==='male'?'♂ 雄性':'♀ 雌性'}</strong></div>
+            <div><span style="color:var(--muted);">年龄</span><br><strong>${esc(cat.age)}</strong></div>
+            <div><span style="color:var(--muted);">毛色</span><br><strong>${esc(cat.color)}</strong></div>
+            <div><span style="color:var(--muted);">绝育</span><br><strong>${cat.neutered?'✅ 已绝育（剪耳标记）':'❌ 未绝育'}</strong></div>
+            <div><span style="color:var(--muted);">投喂优先级</span><br><strong>${cat.neutered?'降权':'优先'}</strong></div>
+            <div><span style="color:var(--muted);">性格画像</span><br><strong>${cat.personality}</strong></div>
         </div>
-        <div class="detail-section">
-            <h4><span class="section-icon">📍</span> 位置信息</h4>
-            <p style="margin-bottom:0.5rem;">📍 ${esc(cat.location)}</p>
-            <p style="color:var(--muted);font-size:0.85rem;">⚠️ 为保护猫咪安全，精确位置仅对认证志愿者可见</p>
+        <p style="margin-bottom:0.5rem;"><strong>📍 ${esc(cat.location)}</strong> <span style="color:var(--muted);font-size:0.8rem;">（精确坐标仅志愿者可见）</span></p>
+        <p style="margin-bottom:0.8rem;">${esc(cat.description)}</p>
+        <div style="display:flex;gap:1.5rem;text-align:center;justify-content:center;padding:1rem;border-radius:var(--radius-sm);background:rgba(139,225,219,0.08);">
+            <div><span style="font-size:1.5rem;font-weight:800;color:var(--primary);display:block;">${fmtNum(cat.feed_count)}</span><span style="font-size:0.8rem;color:var(--muted);">累计投喂</span></div>
+            <div><span style="font-size:1.5rem;font-weight:800;color:var(--primary);display:block;">${fmtNum(cat.views)}</span><span style="font-size:0.8rem;color:var(--muted);">累计观看</span></div>
+            <div><span style="font-size:1.5rem;font-weight:800;color:var(--primary);display:block;">${cat.neutered?'✅':'⏳'}</span><span style="font-size:0.8rem;color:var(--muted);">绝育状态</span></div>
         </div>
-        <div class="detail-section">
-            <h4><span class="section-icon">📝</span> 喵生简介</h4>
-            <p>${esc(cat.description)}</p>
-        </div>
-        <div class="detail-section">
-            <h4><span class="section-icon">📊</span> 互动数据</h4>
-            <div class="detail-stats">
-                <div class="detail-stat"><span class="value">${fmtNum(cat.feed_count)}</span><span class="label">累计投喂</span></div>
-                <div class="detail-stat"><span class="value">${fmtNum(cat.views)}</span><span class="label">累计观看</span></div>
-                <div class="detail-stat"><span class="value">${cat.neutered?'✅':'⏳'}</span><span class="label">${cat.neutered?'已绝育':'待绝育'}</span></div>
-            </div>
-        </div>
-        ${cat.adoption_ready ? `<div style="text-align:center;margin-top:1rem;">
-            <button onclick="showToast('🏠 领养功能即将上线！');$('detailModal').classList.remove('show');document.body.style.overflow='';" 
-                style="background:var(--primary);color:white;border:none;padding:0.8rem 2rem;border-radius:50px;font-size:1rem;cursor:pointer;">
-                🏠 申请领养 ${esc(cat.name)}
-            </button>
-        </div>` : ''}
-    `;
-    $('detailModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
+        ${cat.adoption_ready ? `<button class="btn btn-primary" style="width:100%;margin-top:1rem;justify-content:center;" onclick="closeModal();switchPanel('panel-adopt');showToast('🏠 请填写领养问卷匹配 ${cat.name}')">🏠 申请领养 ${esc(cat.name)}</button>` : ''}
+    `);
 }
 
-// ===== 环境模拟 =====
-function updateEnv() {
-    $('temperature').textContent = (20 + Math.random()*4-2).toFixed(1) + '°C';
-    $('humidity').textContent = Math.floor(55 + Math.random()*10-5) + '%';
+// ===== 面板5: 领养系统 =====
+function renderAdoptQuiz() {
+    const questions = [
+        { id:'q1', text:'您的居住环境是？', opts:['自有住房', '整租', '合租', '宿舍'] },
+        { id:'q2', text:'家中是否有封窗/纱窗？', opts:['是，全部封闭', '部分封闭', '没有'] },
+        { id:'q3', text:'每月可承担的养宠预算？', opts:['300元以下', '300-600元', '600-1000元', '1000元以上'] },
+        { id:'q4', text:'每日可陪伴猫咪的时间？', opts:['2小时以下', '2-4小时', '4-8小时', '8小时以上'] },
+        { id:'q5', text:'是否有养猫经验？', opts:['有丰富经验', '养过其他宠物', '首次养宠'] },
+    ];
+    $('adoptQuiz').innerHTML = questions.map(q=>`
+        <div class="quiz-q">
+            <div class="q-title">${q.text}</div>
+            <div class="q-options" data-qid="${q.id}">
+                ${q.opts.map(o=>`<button class="q-opt" data-value="${o}">${o}</button>`).join('')}
+            </div>
+        </div>
+    `).join('');
+
+    // 选项点击
+    document.querySelectorAll('.q-opt').forEach(opt=>{
+        opt.addEventListener('click', function(){
+            const parent = this.parentElement;
+            parent.querySelectorAll('.q-opt').forEach(o=>o.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
 }
-setInterval(updateEnv, 10000);
+
+function submitQuiz() {
+    const allSelected = document.querySelectorAll('.q-opt.selected');
+    if (allSelected.length < 5) {
+        showToast('⚠️ 请完成所有问题');
+        return;
+    }
+    const score = rand(65, 98);
+    const matchedCat = CATS.find(c=>c.adoption_ready) || CATS[0];
+    $('quizResult').innerHTML = `
+        <div style="text-align:center;padding:1.2rem;border-radius:var(--radius-md);background:rgba(85,239,196,0.1);">
+            <div style="font-size:2.5rem;font-weight:800;color:var(--primary);">${score}%</div>
+            <p style="font-weight:600;">匹配度评分</p>
+            <p style="font-size:0.85rem;color:var(--muted);">推荐匹配猫咪: <strong>${esc(matchedCat.name)}</strong></p>
+            <button class="btn btn-primary btn-sm" style="margin-top:0.5rem;" onclick="showToast('📞 下一步: 与合作医院兽医进行远程视频复核（约15分钟）')">📞 预约视频复核</button>
+        </div>
+    `;
+}
+
+function showStageDetail(stage) {
+    const details = {
+        1: { title:'📱 线上试养 · 第1-7天', desc:'领养人每日上传进食、饮水、精神短视频 → AI自动分析猫咪状态（食欲、活跃度、体态）。第7天AI初筛报告自动生成。' },
+        2: { title:'🏠 月度过渡 · 第8-30天', desc:'每周上传视频+填写行为问卷。第30天上传居家环境全景照片+猫咪称重照片 → AI检测环境安全（窗户/植物/电线）+体态变化分析。异常标记人工介入。' },
+        3: { title:'✅ 稳定期 · 第31-90天', desc:'每月简单反馈+猫咪现状照片。系统自动审核记录连续性，全部正常则第90天自动签署电子确认书。保障金¥300照常退还。' },
+        4: { title:'🏆 终身关怀 · 长期', desc:'每年猫咪健康年报、疫苗/绝育提醒。系统自动推送，无需上门。猫咪永远是MeowGuard大家庭的一员。' },
+    };
+    const d = details[stage];
+    const nodes = document.querySelectorAll('.stage-node');
+    nodes.forEach(n=>n.classList.remove('active'));
+    nodes[stage-1].classList.add('active');
+    $('stageDetail').innerHTML = `<h4>${d.title}</h4><p style="color:var(--muted);margin-top:0.5rem;">${d.desc}</p>`;
+}
+
+// ===== 面板6: 预警中心 =====
+function renderAlerts() {
+    $('healthAlerts').innerHTML = `
+        <div class="alert-row danger">
+            <span>🚨</span>
+            <div style="flex:1;"><strong>大橘</strong> · 连续3天跛行<br><span style="font-size:0.78rem;color:var(--muted);">5月23-25日 | AI三级过滤 → 重度异常 → 已推送合作医院</span></div>
+            <button class="btn btn-sm btn-outline" onclick="showToast('🏥 合作医院已接单，预计今日下午出诊')">跟进</button>
+        </div>
+        <div class="alert-row warning">
+            <span>⚠️</span>
+            <div style="flex:1;"><strong>雪球</strong> · 连续2天打喷嚏<br><span style="font-size:0.78rem;color:var(--muted);">5月24-25日 | 轻度异常 → 已推送健康备忘给云养人</span></div>
+            <button class="btn btn-sm btn-outline" onclick="showToast('📋 系统持续监测中，第3天若无改善将升级')">查看</button>
+        </div>
+        <div class="alert-row info">
+            <span>ℹ️</span>
+            <div style="flex:1;"><strong>咪咪</strong> · 体态变化（体重+0.3kg）<br><span style="font-size:0.78rem;color:var(--muted);">5月20日 | 非紧急 · 已记录</span></div>
+        </div>
+    `;
+
+    $('missingAlerts').innerHTML = `
+        <div class="alert-row warning">
+            <span>🔍</span>
+            <div style="flex:1;"><strong>灰灰</strong> · 已7天未出现<br><span style="font-size:0.78rem;color:var(--muted);">正式响应 → 已推送社区寻猫消息 | 2人上报目击</span></div>
+            <button class="btn btn-sm btn-outline" onclick="showToast('🐾 寻猫消息已推送给关注灰灰的12位用户')">详情</button>
+        </div>
+        <div style="padding:0.8rem;margin-top:0.5rem;border-radius:var(--radius-sm);background:rgba(116,185,255,0.06);font-size:0.82rem;color:var(--muted);">
+            📋 <strong>失踪SOP摘要：</strong><br>
+            · 5天未出现 → 内部标记（不推送）<br>
+            · 7天未出现 → 社区推送寻猫消息+志愿者轻量介入<br>
+            · 14天未出现 → 自动结案"失踪/离区"<br>
+            · 回归自动恢复→推送回归通知
+        </div>
+    `;
+}
+
+// ===== 面板7: 社区共治 =====
+function submitComplaint() {
+    const type = $('complaintType').value;
+    const typeMap = { noise:'夜间叫声', gather:'猫咪聚集', hygiene:'卫生问题', other:'其他' };
+    $('complaintResult').innerHTML = `
+        <div style="padding:1rem;border-radius:var(--radius-sm);background:rgba(85,239,196,0.1);">
+            <p style="font-weight:600;">✅ 投诉已提交</p>
+            <p style="font-size:0.85rem;color:var(--muted);">类型: ${typeMap[type]}</p>
+            <p style="font-size:0.8rem;color:var(--muted);margin-top:0.5rem;">📋 AI自动生成《治理建议报告》→ 已推送物业</p>
+        </div>
+    `;
+
+    $('governanceReport').innerHTML = `
+        <div style="padding:1rem;border-radius:var(--radius-sm);border:1px solid rgba(0,0,0,0.08);">
+            <p style="font-weight:700;margin-bottom:0.5rem;">📋 治理建议报告</p>
+            <p style="font-size:0.82rem;">投诉类型: <strong>${typeMap[type]}</strong></p>
+            <p style="font-size:0.82rem;margin-top:0.5rem;">建议方案:</p>
+            <ul style="font-size:0.8rem;padding-left:1.2rem;color:var(--muted);">
+                <li>迁移猫屋至低干扰区域</li>
+                <li>分时段投喂（22:00后减少出粮）</li>
+                <li>加强TNR绝育计划</li>
+            </ul>
+            <p style="font-size:0.8rem;margin-top:0.5rem;">⏰ 两周闭环执行计划 | 7天未处理自动升级通知街道办</p>
+        </div>
+    `;
+    showToast('📤 投诉已提交，治理报告已生成');
+}
 
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', ()=>{
     DarkMode.init();
-    const initialCat = getCat(currentCatId);
-    if (initialCat) applyCat(initialCat);
+    updateLiveDisplay();
     renderFeedLogs();
+    initFeedPackages();
+    renderDiaries();
     renderCats();
+    renderFundLogs();
+    renderAdoptQuiz();
+    renderAlerts();
+    showStageDetail(1);
+
+    // 模块标签点击
+    document.querySelectorAll('.module-tab').forEach(tab=>{
+        tab.addEventListener('click', function(){
+            switchPanel(this.dataset.panel);
+        });
+    });
 
     // 投喂按钮
-    $('feedBtn').addEventListener('click', ()=>feed());
+    $('feedBtn').addEventListener('click', feed);
 
-    // 弹窗关闭
-    $('modalClose').addEventListener('click', ()=>{ $('detailModal').classList.remove('show'); document.body.style.overflow=''; });
-    $('detailModal').addEventListener('click', (e)=>{ if(e.target===$('detailModal')){ $('detailModal').classList.remove('show'); document.body.style.overflow=''; } });
+    // 提交问卷
+    $('submitQuiz').addEventListener('click', submitQuiz);
 
-    // ESC 关闭
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ $('detailModal').classList.remove('show'); document.body.style.overflow=''; } });
+    // Modal关闭
+    $('modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
 
-    // 更新总投喂数
-    $('totalFeeds').textContent = fmtNum(CATS.reduce((s,c)=>s+c.feed_count,0));
+    // 登录按钮
+    $('loginBtn').addEventListener('click', ()=>showToast('👤 登录功能（模拟）：支持手机号+验证码登录'));
+
+    console.log('🐱 MeowGuard Demo v2.0 — 全部模块已就绪');
+    console.log('  📹 云吸猫 | 📖 猫咪日记 | 💰 透明看板 | 🐱 生命档案 | 🏠 领养系统 | ⚠️ 预警中心 | 🤝 社区共治');
 });
 </script>
 
