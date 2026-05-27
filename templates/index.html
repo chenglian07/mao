@@ -1,200 +1,275 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MeowGuard · 城市流浪猫生命共同体</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=cache_bust) }}">
-    <!-- PWA -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="manifest" href="/static/manifest.json">
     <meta name="theme-color" content="#ff8fb0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="MeowGuard">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152.png') }}">
-    <!-- Chart.js 图表库 -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
+    <!-- ========== 导航栏 ========== -->
     <nav class="navbar">
         <div class="nav-brand">
-            <div>🐱 MeowGuard</div>
-            <div class="nav-tagline">城市流浪猫生命共同体</div>
+            🐱 MeowGuard
+            <span class="nav-tagline">看见每一只猫，守护每一个家</span>
         </div>
-<div class="nav-links">
-    <a href="/" class="active">🏠 首页</a>
-    <a href="/cats">🐱 猫咪档案</a>
-    <a href="/adopt">🏡 领养</a>
-    <button id="loginBtn" class="nav-login-btn">
-        <span class="nav-text">登录</span>
-    </button>
-    <button id="darkModeToggle" class="dark-mode-toggle" title="切换深色模式">🌙</button>
+        <div class="nav-links">
+            <a href="/" class="active">🏠 首页</a>
+            <a href="/cats">📋 猫咪档案</a>
+            <a href="/adopt">🏡 领养中心</a>
+            <button onclick="toggleDarkMode()" class="dark-mode-toggle">🌓</button>
+            <button onclick="showLogin()" class="nav-login-btn">👤 登录</button>
+        </div>
     </nav>
 
-    <main class="main-content">
-        <div class="live-section">
-            <div class="live-header">
-                <h1>📹 MeowGuard 直播间</h1>
-                <div class="live-controls">
-                    <div class="live-status">
-                        <span class="live-dot"></span>
-                        <span>直播中</span>
-                    </div>
-                    <select class="room-select" id="roomSelect" aria-label="切换直播间"></select>
+    <div class="main-content">
+        <!-- ========== Hero 区域 ========== -->
+        <section class="hero">
+            <h1>🐱 MeowGuard · 城市流浪猫生命共同体</h1>
+            <p class="slogan">看见每一只猫，守护每一个家。</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="value" id="statCats">12</div>
+                    <div class="label">建档猫咪</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="value" id="statFeedings">3,427</div>
+                    <div class="label">累计投喂</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="value" id="statAdoptions">5</div>
+                    <div class="label">成功领养</div>
                 </div>
             </div>
-            
-            <div class="video-container">
-                <div class="video-placeholder" id="videoPlaceholder">
-                    <div class="cat-animation">
-                        <div class="cat-silhouette" id="liveCatEmoji">🐱</div>
-                        <div class="cat-name" id="liveCatTitle">咪咪的直播间</div>
-                        <div class="cat-location" id="liveCatLocation">📍 A 区 - 教学楼后</div>
-                    </div>
-                    <p class="video-tip">点击投喂，为守护添一份口粮与关注</p>
-                </div>
-            </div>
+        </section>
 
-            <div class="live-stats">
-                <div class="stat-item">
-                    <span class="stat-value" id="onlineViewers">1,234</span>
-                    <span class="stat-label">在线观众</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-value" id="todayFeeds">156</span>
-                    <span class="stat-label">今日投喂</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-value" id="totalFeeds">791</span>
-                    <span class="stat-label">累计投喂</span>
-                </div>
-            </div>
+        <!-- ========== 快速操作 ========== -->
+        <div class="quick-actions">
+            <button class="btn btn-primary" onclick="location.href='/cats'">📋 查看猫咪档案</button>
+            <button class="btn btn-secondary" onclick="scrollToLive()">📡 观看实时直播</button>
+            <button class="btn btn-secondary" onclick="location.href='/adopt'">🏡 申请领养</button>
+            <button class="btn btn-detail" onclick="scrollToDiary()">📖 猫咪日记</button>
+        </div>
 
-            <div class="feed-section">
-                <button class="feed-btn" id="feedBtn">
-                    <span class="feed-icon">🍖</span>
-                    <span class="feed-text">投喂猫咪</span>
-                    <span class="feed-cost">1 积分/次</span>
+        <!-- ========== 实时直播区 ========== -->
+        <section class="live-feed" id="liveSection">
+            <div class="live-badge">🔴 直播中</div>
+            <div class="live-viewer-count">👁 <span id="viewerCount">42</span> 人在看</div>
+            <div class="live-camera" id="liveCamera">
+                <div class="live-cat-emoji" id="liveCatEmoji" onclick="bounceCat()">🐱</div>
+            </div>
+            <div class="live-env-bar">
+                <span>🌡 温度: <strong id="envTemp">26</strong>°C</span>
+                <span>💧 湿度: <strong id="envHumidity">58</strong>%</span>
+                <span>🍖 今日投喂: <strong id="envTodayFeed">12</strong> 次</span>
+                <span class="ai-verify-badge" id="aiVerifyBadge">
+                    <span class="ai-verify-pulse"></span> AI 猫脸监控中
+                </span>
+            </div>
+            <div class="live-controls">
+                <button class="btn btn-feed" id="btnFeed" onclick="remoteFeed()">
+                    🍖 投喂一份 (1元)
                 </button>
-                <div class="feed-animation" id="feedAnimation"></div>
+                <button class="btn btn-secondary btn-sm" onclick="showCatInfo()">
+                    ℹ️ 当前猫咪信息
+                </button>
+                <button class="btn btn-detail btn-sm" onclick="shareLive()">
+                    📤 分享直播间
+                </button>
             </div>
-        </div>
+        </section>
 
-        <div class="sidebar">
-            <div class="sidebar-card">
-                <h3>📋 投喂记录</h3>
-                <div class="feed-logs" id="feedLogs">
-                    <div class="log-item">
-                        <span class="log-time">刚刚</span>
-                        <span class="log-user">系统</span>
-                        <span class="log-action">直播间已开启</span>
-                    </div>
+        <!-- ========== 投喂透明看板 ========== -->
+        <section class="card resource-flow" id="resourceFlow">
+            <h2 class="section-title">💰 本月资源流向</h2>
+            <div class="resource-flow-bar">
+                <div class="resource-flow-segment unneutered" style="width:72%">未绝育猫 72%</div>
+                <div class="resource-flow-segment neutered" style="width:28%">已绝育猫 28%</div>
+            </div>
+            <div class="resource-flow-legend">
+                <span><span class="resource-flow-dot unneutered"></span> 未绝育猫（优先）</span>
+                <span><span class="resource-flow-dot neutered"></span> 已绝育猫</span>
+            </div>
+            <div class="resource-flow-info">
+                💡 <strong>科学说明：</strong>已绝育猫已无繁殖压力，适当减少投喂可鼓励其保留自然捕食能力，更健康、更有野性。如果你想专门投喂某只已绝育猫，可使用"爱心加餐"功能。
+            </div>
+        </section>
+
+        <!-- ========== 猫咪日记模块 ========== -->
+        <section class="diary-section" id="diarySection">
+            <h2 class="section-title">📖 猫咪日记 <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;">— AI 每日自动生成</span></h2>
+            <div class="diary-cards" id="diaryCards">
+                <!-- 动态填充 -->
+            </div>
+            <div class="diary-co-create">
+                📸 你也拍了小区的猫？<strong>上传照片</strong>，AI 猫脸识别匹配后追加到猫咪日记，获得积分奖励！
+                <br>
+                <button class="diary-upload-btn" onclick="uploadCatPhoto()">📤 上传猫咪照片</button>
+            </div>
+        </section>
+
+        <!-- ========== 社区共治模块 ========== -->
+        <section class="gov-section" id="govSection">
+            <div class="gov-card">
+                <div class="gov-card-header">
+                    <h3>🏘️ 社区共治中心</h3>
+                    <button class="gov-report-btn" onclick="openGovReport()">📝 提交投诉/建议</button>
                 </div>
-            </div>
-
-            <div class="sidebar-card">
-                <h3>🌡️ 环境监测</h3>
-                <div class="env-data">
-                    <div class="env-item">
-                        <span class="env-label">温度</span>
-                        <span class="env-value" id="temperature">22°C</span>
-                    </div>
-                    <div class="env-item">
-                        <span class="env-label">湿度</span>
-                        <span class="env-value" id="humidity">58%</span>
-                    </div>
-                    <div class="env-item">
-                        <span class="env-label">空气质量</span>
-                        <span class="env-value good">良好</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sidebar-card">
-                <h3>🐱 当前猫咪</h3>
-                <div class="current-cat">
-                    <div class="cat-avatar" id="sidebarCatEmoji">🐱</div>
-                    <div class="cat-info">
-                        <div class="cat-name" id="sidebarCatName">咪咪</div>
-                        <div class="cat-nickname" id="sidebarCatNickname">小区一霸</div>
-                        <div class="cat-status" id="sidebarCatBadges"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 数据统计可视化 -->
-        <div class="stats-dashboard">
-            <div class="stats-header">
-                <h3><span class="stats-icon">📊</span> 平台数据统计</h3>
-                <p class="stats-subtitle">实时运营数据概览</p>
-            </div>
-            <div class="stats-grid" id="statsGrid">
-                <!-- 统计卡片将由 JS 动态生成 -->
-            </div>
-            
-            <!-- 图表区域 -->
-            <div class="charts-container">
-                <!-- 投喂趋势图 -->
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h4>🍖 投喂趋势</h4>
-                        <div class="chart-period">
-                            <button class="period-btn active" data-period="week">本周</button>
-                            <button class="period-btn" data-period="month">本月</button>
+                <div class="gov-items">
+                    <div class="gov-item">
+                        <span class="gov-item-icon">✅</span>
+                        <div class="gov-item-content">
+                            <div class="gov-item-title">禁止清单</div>
+                            <div class="gov-item-desc">明确禁止私自捕捉、转移、遗弃猫咪等行为。违反者将终止服务并上报街道。</div>
                         </div>
                     </div>
-                    <div class="chart-body">
-                        <canvas id="feedChart"></canvas>
+                    <div class="gov-item warning">
+                        <span class="gov-item-icon">⚠️</span>
+                        <div class="gov-item-content">
+                            <div class="gov-item-title">无害替代方案</div>
+                            <div class="gov-item-desc">迁移猫屋位置、分时段投喂、加强绝育计划、安装超声波驱避器等柔性方案。</div>
+                        </div>
+                    </div>
+                    <div class="gov-item">
+                        <span class="gov-item-icon">📅</span>
+                        <div class="gov-item-content">
+                            <div class="gov-item-title">两周闭环执行计划</div>
+                            <div class="gov-item-desc">投诉提交 → 自动生成治理建议报告 → 物业执行 → 7天反馈 → 14天结案。</div>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- 积分排行榜 -->
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h4>🏆 猫咪积分排行</h4>
-                    </div>
-                    <div class="chart-body">
-                        <canvas id="pointsChart"></canvas>
-                    </div>
+            </div>
+        </section>
+
+        <!-- ========== 失踪警报（如有） ========== -->
+        <section id="missingAlertSection">
+            <!-- 动态填充失踪警告卡片 -->
+        </section>
+
+        <!-- ========== 统计卡片 ========== -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <span class="stat-icon">🐱</span>
+                <div class="stat-info">
+                    <span class="stat-value" id="totalCats">12</span>
+                    <span class="stat-label">建档猫咪</span>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <span class="stat-icon">✅</span>
+                <div class="stat-info">
+                    <span class="stat-value" id="neuteredCount">8</span>
+                    <span class="stat-label">已绝育</span>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <span class="stat-icon">⚠️</span>
+                <div class="stat-info">
+                    <span class="stat-value" id="unnuteredCount">4</span>
+                    <span class="stat-label">待绝育</span>
+                </div>
+            </div>
+            <div class="stat-card info">
+                <span class="stat-icon">🏡</span>
+                <div class="stat-info">
+                    <span class="stat-value" id="adoptedCount">5</span>
+                    <span class="stat-label">已领养</span>
                 </div>
             </div>
         </div>
 
-        <!-- 消息通知中心 -->
-        <div class="notification-center">
-            <div class="notification-header">
-                <h3><span class="notification-icon">🔔</span> 消息通知</h3>
-                <button class="notification-mark-read" id="markAllRead">全部已读</button>
+        <!-- ========== 排行榜面板 ========== -->
+        <div class="info-panels">
+            <div class="info-panel" id="panelLeaderboard">
+                <div class="panel-header" onclick="togglePanel('panelLeaderboard')">
+                    <h3>🏆 猫咪人气榜</h3>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-content" id="panelLeaderboardContent">
+                    <div id="leaderboardList">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
             </div>
-            <div class="notification-tabs">
-                <button class="notification-tab active" data-tab="all">全部</button>
-                <button class="notification-tab" data-tab="system">系统</button>
-                <button class="notification-tab" data-tab="activity">动态</button>
-                <button class="notification-tab" data-tab="reminder">提醒</button>
-            </div>
-            <div class="notification-list" id="notificationList">
-                <!-- 通知列表将由 JS 动态生成 -->
+
+            <div class="info-panel" id="panelNotifications">
+                <div class="panel-header" onclick="togglePanel('panelNotifications')">
+                    <h3>🔔 消息通知</h3>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-content" id="panelNotificationsContent">
+                    <div id="notificationList">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
+    </div>
 
+    <!-- ========== Toast 提示 ========== -->
     <div class="toast" id="toast"></div>
 
-    <script src="{{ url_for('static', filename='js/main.js', v=cache_bust) }}"></script>
-    <script>
-        // 注册 Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
-                    .then(function(registration) {
-                        console.log('Service Worker 注册成功:', registration.scope);
-                    })
-                    .catch(function(error) {
-                        console.log('Service Worker 注册失败:', error);
-                    });
-            });
-        }
-    </script>
-    </body>
+    <!-- ========== 治理报告弹窗 ========== -->
+    <div class="gov-report-modal" id="govReportModal">
+        <div class="gov-report-content">
+            <h3>📝 提交社区投诉/建议</h3>
+            <textarea id="govReportText" placeholder="请描述您遇到的问题或建议（如夜间猫叫扰民、猫群聚集等）"></textarea>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="closeGovReport()">取消</button>
+                <button class="btn btn-primary" onclick="submitGovReport()">提交</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 分享弹窗 ========== -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-modal-content">
+            <button class="share-modal-close" onclick="closeShareModal()">✕</button>
+            <div class="share-modal-header">
+                <h3>📤 分享直播间</h3>
+                <p>让更多人看到可爱的猫咪</p>
+            </div>
+            <div class="share-cat-preview">
+                <div class="share-cat-avatar">🐱</div>
+                <div class="share-cat-name">小花</div>
+                <div class="share-cat-nickname">小区明星猫</div>
+            </div>
+            <div class="share-options">
+                <div class="share-option" onclick="shareTo('wechat')">
+                    <span class="share-option-icon">💬</span>
+                    <span class="share-option-label">微信</span>
+                </div>
+                <div class="share-option" onclick="shareTo('weibo')">
+                    <span class="share-option-icon">📢</span>
+                    <span class="share-option-label">微博</span>
+                </div>
+                <div class="share-option" onclick="shareTo('copy')">
+                    <span class="share-option-icon">🔗</span>
+                    <span class="share-option-label">复制链接</span>
+                </div>
+            </div>
+            <div class="share-link-section">
+                <span class="share-link-label">直播间链接</span>
+                <div class="share-link-container">
+                    <input type="text" class="share-link-input" value="https://meowguard.app/live/123" readonly>
+                    <button class="share-link-btn" onclick="shareTo('copy')">复制</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 猫咪详情弹窗 ========== -->
+    <div class="cat-detail-modal" id="catDetailModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeCatDetail()">✕</button>
+            <div class="modal-body" id="catDetailBody">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
 </html>
