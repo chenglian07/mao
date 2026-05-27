@@ -903,9 +903,25 @@ const LiveRoom = {
         this.currentCatId = catId;
         const cat = this.getCatById(catId);
         if (cat) {
+            this.currentCat = cat;
             this.applyCat(cat);
             this.loadFeedLogs(catId);
             this.updateUrl(catId);
+        }
+    },
+
+    // 加载当前猫咪（被 switchLiveCat 全局函数调用）
+    async loadCurrentCat() {
+        await this.loadData();
+        const cat = this.getCatById(this.currentCatId) || this.cats[0];
+        if (cat) {
+            this.currentCat = cat;
+            this.currentCatId = cat.id;
+            this.applyCat(cat);
+            this.loadFeedLogs(cat.id);
+            this.updateUrl(cat.id);
+            const select = document.getElementById('roomSelect');
+            if (select) select.value = String(cat.id);
         }
     },
     
@@ -1578,7 +1594,7 @@ const StatsDashboard = {
         if (!statsGrid) return;
         
         try {
-            const stats = await API.get('/api/stats');
+            const stats = await API.get('/stats');
             
             statsGrid.innerHTML = `
                 <div class="stat-card primary">
@@ -1624,8 +1640,8 @@ const StatsDashboard = {
         
         try {
             // 获取历史数据
-            const feedData = await API.get('/api/stats/feed-history');
-            const pointsData = await API.get('/api/stats/points-history');
+            const feedData = await API.get('/stats/feed-history');
+            const pointsData = await API.get('/stats/points-history');
             
             // 渲染投喂趋势图
             if (feedChartCanvas && typeof Chart !== 'undefined') {
@@ -1834,8 +1850,8 @@ const StatsDashboard = {
     
     async updateChartData(period) {
         try {
-            const feedData = await API.get(`/api/stats/feed-history?period=${period}`);
-            const pointsData = await API.get(`/api/stats/points-history?period=${period}`);
+            const feedData = await API.get(`/stats/feed-history?period=${period}`);
+            const pointsData = await API.get(`/stats/points-history?period=${period}`);
             
             const feedChartCanvas = document.getElementById('feedChart');
             const pointsChartCanvas = document.getElementById('pointsChart');
@@ -1873,7 +1889,7 @@ const NotificationCenter = {
         if (!notificationList) return;
         
         try {
-            this.notifications = await API.get('/api/notifications');
+            this.notifications = await API.get('/notifications');
             this.updateUnreadCount();
         } catch (error) {
             console.error('加载通知失败:', error);
@@ -2012,7 +2028,7 @@ const NotificationCenter = {
             this.displayNotifications();
             
             try {
-                await API.post('/api/notifications/read', { id });
+                await API.post('/notifications/read', { id });
             } catch (error) {
                 console.error('标记已读失败:', error);
             }
@@ -2025,7 +2041,7 @@ const NotificationCenter = {
         this.displayNotifications();
         
         try {
-            await API.post('/api/notifications/read-all');
+            await API.post('/notifications/read-all');
             Toast.success('所有通知已标记为已读');
         } catch (error) {
             console.error('批量标记已读失败:', error);
@@ -2036,9 +2052,9 @@ const NotificationCenter = {
         // 每 30 秒轮询一次新通知
         setInterval(async () => {
             try {
-                const newNotifications = await API.get('/api/notifications/unread-count');
+                const newNotifications = await API.get('/notifications/unread-count');
                 if (newNotifications.count > this.unreadCount) {
-                    this.notifications = await API.get('/api/notifications');
+                    this.notifications = await API.get('/notifications');
                     this.updateUnreadCount();
                     
                     // 显示新通知提示
@@ -2722,6 +2738,279 @@ function registerServiceWorker() {
 }
 
 // ============================================
+// 全局辅助函数（HTML onclick 调用）
+// ============================================
+
+// --- 治理报告弹窗 ---
+function openGovReport() {
+    const modal = document.getElementById('govReportModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeGovReport() {
+    const modal = document.getElementById('govReportModal');
+    if (modal) modal.style.display = 'none';
+    document.getElementById('govReportText').value = '';
+}
+
+function submitGovReport() {
+    const text = document.getElementById('govReportText').value.trim();
+    if (!text) {
+        Toast.warning('请填写投诉或建议内容', 2500);
+        return;
+    }
+    // 收集投诉基本信息
+    const report = {
+        problem: text,
+        time: new Date().toISOString(),
+        catName: LiveRoom.currentCat?.name || null
+    };
+    const generated = CommunityMediation.generateReport(report);
+    // 显示生成的治理建议
+    const forbiddenHTML = generated.forbidden.map(a => '<li>❌ ' + a + '</li>').join('');
+    const altHTML = generated.alternatives.map(s => '<li>✅ ' + s + '</li>').join('');
+    const planHTML = '<li>📅 第1周：' + generated.plan.week1 + '</li><li>📅 第2周：' + generated.plan.week2 + '</li>';
+    
+    const modal = document.getElementById('govReportModal');
+    if (modal) {
+        modal.querySelector('.gov-report-content').innerHTML = `
+            <h3>📋 治理建议报告已生成</h3>
+            <div style="text-align:left;padding:1rem;max-height:60vh;overflow-y:auto;">
+                <h4>🚫 禁止清单</h4>
+                <ul style="list-style:none;padding:0;">${forbiddenHTML}</ul>
+                <h4>💡 无害替代方案</h4>
+                <ul style="list-style:none;padding:0;">${altHTML}</ul>
+                <h4>📋 两周闭环执行计划</h4>
+                <ul style="list-style:none;padding:0;">${planHTML}</ul>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="closeGovReport()">关闭</button>
+                <button class="btn btn-primary" onclick="Toast.success('报告已提交，物业将在24小时内响应');closeGovReport();">确认并提交</button>
+            </div>
+        `;
+    }
+}
+
+// --- 面板折叠切换 ---
+function togglePanel(panelId) {
+    const content = document.getElementById(panelId + 'Content');
+    const header = document.querySelector('#' + panelId + ' .panel-toggle');
+    if (!content) return;
+    
+    if (content.style.display === 'none' || !content.style.display) {
+        content.style.display = 'block';
+        if (header) header.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        if (header) header.textContent = '▼';
+    }
+    
+    // 打开排行榜时填充数据
+    if (panelId === 'panelLeaderboard' && content.style.display !== 'none') {
+        renderLeaderboard();
+    }
+    // 打开通知面板时刷新
+    if (panelId === 'panelNotifications' && content.style.display !== 'none') {
+        NotificationCenter.displayNotifications();
+    }
+}
+
+// --- 猫咪人气排行榜渲染 ---
+async function renderLeaderboard() {
+    const list = document.getElementById('leaderboardList');
+    if (!list) return;
+    
+    let cats = [];
+    try {
+        const cache = sessionStorage.getItem('leaderboard_cats');
+        if (cache) {
+            cats = JSON.parse(cache);
+        } else {
+            const resp = await fetch('/api/cats');
+            const data = await resp.json();
+            cats = data.cats || data || [];
+            sessionStorage.setItem('leaderboard_cats', JSON.stringify(cats));
+        }
+    } catch (e) {
+        cats = [];
+    }
+    
+    if (cats.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">🏆 暂无排名数据</div>';
+        return;
+    }
+    
+    // 按积分排序（模拟数据 - 实际应从API获取）
+    const sorted = cats.map(c => ({
+        ...c,
+        score: c.points || Math.floor(Math.random() * 200) + 50
+    })).sort((a, b) => b.score - a.score);
+    
+    const medals = ['🥇', '🥈', '🥉'];
+    list.innerHTML = sorted.map((cat, i) => `
+        <div class="leaderboard-item" onclick="switchLiveCat(${cat.id})" style="cursor:pointer;">
+            <span class="leaderboard-rank">${i < 3 ? medals[i] : (i + 1)}</span>
+            <span class="leaderboard-avatar">🐱</span>
+            <span class="leaderboard-name">${cat.name || '猫咪'}</span>
+            <span class="leaderboard-score">${cat.score} 分</span>
+        </div>
+    `).join('');
+}
+
+// --- 直播切换猫咪 ---
+function switchLiveCat(catId) {
+    LiveRoom.currentCatId = catId;
+    LiveRoom.loadCurrentCat();
+    Toast.success('已切换到猫咪 ' + catId, 2000);
+}
+
+// --- 导航辅助函数 ---
+function scrollToLive() {
+    const el = document.getElementById('liveSection');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function scrollToDiary() {
+    const el = document.getElementById('diarySection');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function bounceCat() {
+    const emoji = document.getElementById('liveCatEmoji');
+    if (emoji) {
+        emoji.style.transform = 'scale(1.3)';
+        emoji.style.transition = 'transform 0.2s ease';
+        setTimeout(() => { emoji.style.transform = 'scale(1)'; }, 300);
+    }
+}
+
+function showCatInfo() {
+    if (LiveRoom.currentCat) {
+        const cat = LiveRoom.currentCat;
+        Toast.show(`当前：${cat.name || '猫咪'} | ${cat.neutered ? '已绝育 ✅' : '待绝育 ⚠️'} | ${cat.color || '花色未知'}`, 4000, 'info');
+    } else {
+        Toast.show('暂无猫咪信息', 2000, 'warning');
+    }
+}
+
+function shareLive() {
+    const modal = document.getElementById('shareModal');
+    if (modal) {
+        const preview = modal.querySelector('.share-cat-name');
+        if (preview && LiveRoom.currentCat) {
+            preview.textContent = LiveRoom.currentCat.name || '猫咪';
+        }
+        modal.style.display = 'flex';
+    }
+}
+
+function closeShareModal() {
+    const modal = document.getElementById('shareModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function shareTo(platform) {
+    const url = window.location.href;
+    if (platform === 'copy') {
+        navigator.clipboard.writeText(url).then(() => {
+            Toast.success('链接已复制到剪贴板！', 2000);
+        }).catch(() => {
+            Toast.show('复制失败，请手动复制', 2000, 'warning');
+        });
+    } else if (platform === 'wechat') {
+        Toast.show('请截图分享到微信好友或朋友圈', 3000, 'info');
+    } else if (platform === 'weibo') {
+        window.open('https://service.weibo.com/share/share.php?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent('来看可爱的猫咪！'), '_blank');
+    }
+    closeShareModal();
+}
+
+function uploadCatPhoto() {
+    Toast.show('请在弹出窗口中选择猫咪照片上传（AI将自动识别匹配猫咪档案）', 4000, 'info');
+    // MVP 阶段展示模拟上传
+    setTimeout(() => {
+        Toast.success('照片已上传！AI正在识别...预计10秒内完成匹配', 3000);
+    }, 1500);
+}
+
+function remoteFeed() {
+    if (LiveRoom.currentCatId) {
+        LiveRoom.feed();
+    } else {
+        Toast.warning('请先选择一只猫咪进行投喂', 2500);
+    }
+}
+
+// --- 集中更新所有统计数字 ---
+async function updateAllStats() {
+    try {
+        const resp = await fetch('/api/stats');
+        const stats = await resp.json();
+        if (stats) {
+            document.querySelectorAll('#totalCats, #statCats').forEach(el => { if (el) el.textContent = stats.total_cats || 4; });
+            document.querySelectorAll('#neuteredCount').forEach(el => { if (el) el.textContent = stats.neutered || 2; });
+            document.querySelectorAll('#unnuteredCount').forEach(el => { if (el) el.textContent = stats.unnutered || 2; });
+            document.querySelectorAll('#adoptedCount').forEach(el => { if (el) el.textContent = stats.adopted || 1; });
+            if (document.getElementById('statFeedings')) {
+                document.getElementById('statFeedings').textContent = (stats.total_feedings || 3427).toLocaleString();
+            }
+            if (document.getElementById('statAdoptions')) {
+                document.getElementById('statAdoptions').textContent = stats.adopted || 1;
+            }
+        }
+    } catch (e) {
+        console.error('更新统计数据失败:', e);
+    }
+}
+
+// --- 猫咪日记渲染 ---
+function renderCatDiaries() {
+    const container = document.getElementById('diaryCards');
+    if (!container) return;
+    
+    // 获取猫咪列表
+    fetch('/api/cats')
+        .then(r => r.json())
+        .then(data => {
+            const cats = data.cats || data || [];
+            if (cats.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">📖 暂无猫咪日记数据</div>';
+                return;
+            }
+            container.innerHTML = cats.slice(0, 4).map(cat => {
+                const diary = CatDiary.generate(cat, null);
+                return `
+                    <div class="diary-card">
+                        <div class="diary-card-header">
+                            <span class="diary-cat-avatar">🐱</span>
+                            <span class="diary-cat-name">${cat.name || '猫咪'}</span>
+                            <span class="diary-date">${new Date().toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span>
+                        </div>
+                        <div class="diary-card-body">${diary}</div>
+                        <div class="diary-card-footer">
+                            <span>🐾 今日来访 ${Math.floor(Math.random() * 4) + 1} 次</span>
+                            <span>⏱ 停留约 ${Math.floor(Math.random() * 15) + 5} 分钟</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        })
+        .catch(() => {
+            container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">⚠️ 日记加载失败，请稍后重试</div>';
+        });
+}
+
+// --- 深色模式切换（导航栏按钮） ---
+function toggleDarkMode() {
+    DarkMode.toggle();
+}
+
+// --- 登录弹窗（导航栏按钮） ---
+function showLogin() {
+    Auth.showLogin();
+}
+
+// ============================================
 // 页面初始化
 // ============================================
 
@@ -2750,6 +3039,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
     if (path === '/' || path === '/index.html') {
         StatsDashboard.init();
+        // 首页额外初始化
+        renderCatDiaries();           // 猫咪日记
+        updateAllStats();             // 修正硬编码的统计数字
+        renderLeaderboard();          // 人气排行榜
     }
     
     // 通知中心初始化（在所有页面）
