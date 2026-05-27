@@ -37,6 +37,294 @@ function throttle(func, limit = 1000) {
 }
 
 /**
+ * API 请求封装层
+ */
+const API = {
+    BASE: '/api',
+    
+    _token() {
+        return localStorage.getItem('auth_token') || '';
+    },
+    
+    async _request(method, path, body = null, auth = true) {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = this._token();
+        if (auth && token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+        
+        const opts = { method, headers };
+        if (body && method !== 'GET') {
+            opts.body = JSON.stringify(body);
+        }
+        
+        try {
+            const res = await fetch(this.BASE + path, opts);
+            const data = await res.json();
+            // 检查是否需要登录
+            if (data.need_login) {
+                Auth.showLogin();
+                throw new Error(data.message || '请先登录');
+            }
+            if (!data.success && data.message) {
+                // 不在这里弹 toast，让调用方决定
+            }
+            return data;
+        } catch (err) {
+            if (err.message === 'Failed to fetch') {
+                Toast.show('网络异常，请检查连接', 3000, 'error');
+            }
+            throw err;
+        }
+    },
+    
+    get(path, auth = false) { return this._request('GET', path, null, auth); },
+    post(path, body, auth = false) { return this._request('POST', path, body, auth); },
+    put(path, body, auth = true) { return this._request('PUT', path, body, auth); },
+    delete(path, auth = true) { return this._request('DELETE', path, null, auth); }
+};
+
+/**
+ * 认证系统模块
+ */
+const Auth = {
+    user: null,
+    modal: null,
+    isGuest: true,
+    
+    init() {
+        // 尝试从本地恢复登录状态
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            this._fetchUser();
+        } else {
+            this.isGuest = true;
+            this._generateGuestId();
+        }
+        this._injectModal();
+        this._bindNavButton();
+    },
+    
+    async _fetchUser() {
+        try {
+            const data = await API.get('/auth/me', true);
+            if (data.success && data.user) {
+                this.user = data.user;
+                this.isGuest = false;
+                this._updateNavUI();
+            } else {
+                this._logoutLocal();
+            }
+        } catch {
+            this._logoutLocal();
+        }
+    },
+    
+    _logoutLocal() {
+        localStorage.removeItem('auth_token');
+        this.user = null;
+        this.isGuest = true;
+        this._generateGuestId();
+        this._updateNavUI();
+    },
+    
+    _generateGuestId() {
+        if (!localStorage.getItem('guest_id')) {
+            localStorage.setItem('guest_id', 'guest_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
+        }
+    },
+    
+    getGuestId() {
+        return localStorage.getItem('guest_id') || '';
+    },
+    
+    _injectModal() {
+        // 避免重复注入
+        if (document.getElementById('loginModal')) return;
+        
+        const html = `
+        <div id="loginModal" class="modal" style="display:none;">
+            <div class="modal-overlay" id="loginOverlay"></div>
+            <div class="modal-content login-modal-content">
+                <div class="modal-header">
+                    <h3>📱 登录 MeowGuard</h3>
+                    <button class="modal-close" id="loginClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="login-desc">登录后无限畅喂，记录你的爱心足迹</p>
+                    <div class="form-group">
+                        <label>📞 手机号</label>
+                        <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label>🔑 验证码</label>
+                        <div class="code-row">
+                            <input type="text" id="loginCode" placeholder="验证码" maxlength="6" class="form-input" style="flex:1;" />
+                            <button id="sendCodeBtn" class="btn btn-outline" style="width:120px;">发送验证码</button>
+                        </div>
+                        <span class="form-hint">测试验证码：8888</span>
+                    </div>
+                    <button id="loginSubmit" class="btn btn-primary btn-block">登 录</button>
+                    <p class="login-footer-text">登录即表示同意《用户协议》和《隐私政策》</p>
+                </div>
+            </div>
+        </div>`;
+        
+        document.body.insertAdjacentHTML('beforeend', html);
+        
+        // 绑定事件
+        document.getElementById('loginClose').addEventListener('click', () => this.hideLogin());
+        document.getElementById('loginOverlay').addEventListener('click', () => this.hideLogin());
+        document.getElementById('sendCodeBtn').addEventListener('click', () => this._sendCode());
+        document.getElementById('loginSubmit').addEventListener('click', () => this._doLogin());
+    },
+    
+    _bindNavButton() {
+        // 用事件委托在 init 时绑定，但按钮可能还没渲染
+        // 改用 MutationObserver 或直接在需要时查询
+        const tryBind = () => {
+            const btn = document.getElementById('loginBtn');
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    if (this.isGuest) {
+                        this.showLogin();
+                    } else {
+                        this._doLogout();
+                    }
+                });
+                this._updateNavUI();
+            }
+        };
+        // 延迟绑定，等导航渲染完成
+        setTimeout(tryBind, 100);
+        // 也监听 DOM 变化
+        if (window.MutationObserver) {
+            const obs = new MutationObserver(() => {
+                const btn = document.getElementById('loginBtn');
+                if (btn && !btn._authBound) {
+                    btn._authBound = true;
+                    btn.addEventListener('click', () => {
+                        if (this.isGuest) {
+                            this.showLogin();
+                        } else {
+                            this._doLogout();
+                        }
+                    });
+                    this._updateNavUI();
+                }
+            });
+            obs.observe(document.body, { childList: true, subtree: true });
+        }
+    },
+    
+    _updateNavUI() {
+        const btn = document.getElementById('loginBtn');
+        if (!btn) return;
+        const textEl = btn.querySelector('.nav-text') || btn;
+        if (this.isGuest || !this.user) {
+            btn.classList.remove('logged-in');
+            textEl.textContent = '登录';
+            // 更新投喂按钮为游客模式
+            this._updateFeedButtons('guest');
+        } else {
+            btn.classList.add('logged-in');
+            textEl.textContent = this.user.nickname || '我的';
+            this._updateFeedButtons('user');
+        }
+    },
+    
+    _updateFeedButtons(mode) {
+        document.querySelectorAll('.feed-btn').forEach(btn => {
+            btn.dataset.feedMode = mode;
+        });
+    },
+    
+    showLogin() {
+        const modal = document.getElementById('loginModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.getElementById('loginPhone').value = '';
+            document.getElementById('loginCode').value = '';
+        }
+    },
+    
+    hideLogin() {
+        const modal = document.getElementById('loginModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    },
+    
+    _sendCode() {
+        const phone = document.getElementById('loginPhone').value.trim();
+        if (!phone || phone.length < 11) {
+            Toast.show('请输入正确的手机号', 2500, 'warning');
+            return;
+        }
+        // MVP 阶段：模拟发送验证码
+        const btn = document.getElementById('sendCodeBtn');
+        btn.disabled = true;
+        btn.textContent = '60s后重发';
+        let sec = 60;
+        const timer = setInterval(() => {
+            sec--;
+            btn.textContent = sec + 's后重发';
+            if (sec <= 0) {
+                clearInterval(timer);
+                btn.disabled = false;
+                btn.textContent = '发送验证码';
+            }
+        }, 1000);
+        Toast.show('验证码已发送（测试：8888）', 2500, 'info');
+    },
+    
+    async _doLogin() {
+        const phone = document.getElementById('loginPhone').value.trim();
+        const code = document.getElementById('loginCode').value.trim();
+        
+        if (!phone || phone.length < 11) {
+            Toast.show('请输入正确的手机号', 2500, 'warning');
+            return;
+        }
+        if (!code || code.length < 4) {
+            Toast.show('请输入验证码', 2500, 'warning');
+            return;
+        }
+        
+        const submitBtn = document.getElementById('loginSubmit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '登录中...';
+        
+        try {
+            const data = await API.post('/auth/login', { phone, code });
+            if (data.success) {
+                localStorage.setItem('auth_token', data.token);
+                this.user = data.user;
+                this.isGuest = false;
+                this._updateNavUI();
+                this.hideLogin();
+                Toast.show(`欢迎回来，${data.user.nickname}！🐱`, 3000, 'success');
+            } else {
+                Toast.show(data.message || '登录失败', 3000, 'error');
+            }
+        } catch {
+            Toast.show('登录失败，请重试', 3000, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '登 录';
+        }
+    },
+    
+    async _doLogout() {
+        try {
+            await API.post('/auth/logout', {});
+        } catch {}
+        this._logoutLocal();
+        Toast.show('已退出登录', 2000, 'info');
+    }
+};
+
+/**
  * Toast 提示系统
  */
 const Toast = {
@@ -254,67 +542,18 @@ const DarkMode = {
 };
 
 // ============================================
-// API 调用模块
-// ============================================
-
-const API = {
-    baseURL: '',
-    
-    async request(url, options = {}) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        
-        try {
-            const response = await fetch(this.baseURL + url, {
-                ...options,
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                throw new Error(error.message || `HTTP ${response.status}`);
-            }
-            
-            return await response.json();
-        } catch (error) {
-            if (error.name === 'AbortError') {
-                throw new Error('请求超时，请检查网络连接');
-            }
-            throw error;
-        }
-    },
-    
-    get(url) {
-        return this.request(url);
-    },
-    
-    post(url, data) {
-        return this.request(url, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-};
-
-// ============================================
-// 猫咪数据模块
+// 猫咪数据模块 (使用新的 API 封装)
 // ============================================
 
 const CatStore = {
     cats: [],
     stats: {},
     cacheTime: 0,
-    cacheDuration: 30000, // 30 秒缓存
+    cacheDuration: 30000,
     
     async fetchCats() {
         try {
-            this.cats = await API.get('/api/cats');
+            this.cats = await API.get('/cats');
             this.cacheTime = Date.now();
             return this.cats;
         } catch (error) {
@@ -326,7 +565,7 @@ const CatStore = {
     
     async fetchStats() {
         try {
-            this.stats = await API.get('/api/stats');
+            this.stats = await API.get('/stats');
             return this.stats;
         } catch (error) {
             console.error('获取统计数据失败:', error);
@@ -469,7 +708,7 @@ const CatUI = {
         Loading.show('modalBody');
         
         try {
-            const cat = await API.get(`/api/cat/${catId}`);
+            const cat = await API.get(`/cat/${catId}`);
             
             modalBody.innerHTML = `
                 <div class="detail-header">
@@ -617,8 +856,8 @@ const LiveRoom = {
     async loadData() {
         try {
             const [cats, stats] = await Promise.all([
-                API.get('/api/cats'),
-                API.get('/api/stats')
+                API.get('/cats'),
+                API.get('/stats')
             ]);
             this.cats = Array.isArray(cats) ? cats : [];
             this.stats = stats || {};
@@ -707,45 +946,56 @@ const LiveRoom = {
         const feedBtn = document.getElementById('feedBtn');
         if (!feedBtn || feedBtn.disabled) return;
         
-        // 直接设置按钮状态，不使用 Loading.toggleButton
+        // 区分游客和登录用户
+        const isGuest = Auth.isGuest;
+        
         feedBtn.disabled = true;
         const originalHtml = feedBtn.innerHTML;
         feedBtn.innerHTML = `
             <span class="button-loading">
                 <span class="spinner-small"></span>
-                <span>处理中...</span>
+                <span>投喂中...</span>
             </span>
         `;
         
         try {
-            const result = await API.post('/api/feed', {
-                cat_id: this.currentCatId,
-                user_name: '匿名用户'
-            });
+            let result;
+            if (isGuest) {
+                // 游客投喂
+                result = await API.post('/feed-as-guest', {
+                    cat_id: this.currentCatId,
+                    guest_id: Auth.getGuestId()
+                });
+            } else {
+                // 登录用户投喂
+                result = await API.post('/feed', {
+                    cat_id: this.currentCatId
+                }, true); // auth = true
+            }
             
             if (result.success) {
                 Toast.success(result.message);
                 this.triggerFeedAnimation();
                 
-                // 更新显示
                 if (typeof result.feed_count === 'number') {
                     const todayFeeds = document.getElementById('todayFeeds');
                     if (todayFeeds) todayFeeds.textContent = formatNumber(result.feed_count);
-                    
                     const cat = this.getCatById(this.currentCatId);
                     if (cat) cat.feed_count = result.feed_count;
                 }
                 
-                // 加载最新投喂记录
                 this.loadFeedLogs(this.currentCatId);
             } else {
                 Toast.error(result.message || '投喂失败');
+                // 如果需要登录，弹出登录框
+                if (result.need_login) {
+                    Auth.showLogin();
+                }
             }
         } catch (error) {
             console.error('投喂失败:', error);
             Toast.error('投喂失败，请检查网络连接');
         } finally {
-            // 恢复按钮状态
             const btn = document.getElementById('feedBtn');
             if (btn) {
                 btn.disabled = false;
@@ -784,7 +1034,7 @@ const LiveRoom = {
     
     async loadFeedLogs(catId) {
         try {
-            const logs = await API.get(`/api/feed-logs?cat_id=${catId}&limit=10`);
+            const logs = await API.get(`/feed-logs?cat_id=${catId}&limit=10`);
             const feedLogsEl = document.getElementById('feedLogs');
             
             if (feedLogsEl && logs.length > 0) {
@@ -1132,7 +1382,7 @@ const AdoptPage = {
         submitBtn.innerHTML = '<span class="button-loading"><span class="spinner-small"></span><span>提交中...</span></span>';
         
         try {
-            const result = await API.post('/api/adoption', formData);
+            const result = await API.post('/adopt/apply', formData);
             
             if (result.success) {
                 Toast.success('申请已提交，我们会尽快联系您！', 5000);
@@ -1236,7 +1486,7 @@ const ShareUI = {
     
     async shareCat(catId) {
         try {
-            const cat = await API.get(`/api/cat/${catId}`);
+            const cat = await API.get(`/cat/${catId}`);
             this.currentCat = cat;
             
             // 更新弹窗内容
@@ -2290,6 +2540,9 @@ document.addEventListener('DOMContentLoaded', () => {
     registerServiceWorker();
     // Toast 初始化
     Toast.init();
+    
+    // 认证系统初始化
+    Auth.init();
     
     // 深色模式初始化
     DarkMode.init();

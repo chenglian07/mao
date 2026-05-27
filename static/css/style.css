@@ -3868,3 +3868,153 @@ body.dark-mode .dark-mode-toggle::before {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* ============================================ */
+/* 登录弹窗样式 */
+/* ============================================ */
+
+.login-modal-content {
+    max-width: 420px;
+    width: 90%;
+}
+
+.login-desc {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.code-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.code-row .form-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.form-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted, #999);
+    margin-top: 0.25rem;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--primary, #ff8fb0);
+    color: var(--primary, #ff8fb0);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    background: var(--primary, #ff8fb0);
+    color: #fff;
+}
+
+.btn-outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.login-footer-text {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted, #aaa);
+    margin-top: 1rem;
+}
+
+/* 导航栏登录按钮 */
+.nav-login-btn {
+    background: transparent;
+    border: 1.5px solid var(--primary, #ff8fb0);
+    color: var(--primary, #ff8fb0);
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.nav-login-btn:hover {
+    background: var(--primary, #ff8fb0);
+    color: #fff;
+    transform: scale(1.03);
+}
+
+.nav-login-btn.logged-in {
+    background: var(--primary, #ff8fb0);
+    color: #fff;
+    border-color: var(--primary, #ff8fb0);
+}
+
+/* 游客投喂按钮提示 */
+.feed-btn[data-feed-mode="guest"]::after {
+    content: "(游客限5次/天)";
+    display: block;
+    font-size: 0.65rem;
+    color: var(--text-muted, #999);
+    margin-top: -4px;
+}
+
+/* 投喂按钮加载动画 */
+.button-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 深色模式适配 */
+body.dark-mode .btn-outline {
+    border-color: var(--primary, #ff8fb0);
+    color: var(--primary, #ff8fb0);
+}
+
+body.dark-mode .nav-login-btn {
+    border-color: var(--primary, #ff8fb0);
+    color: var(--primary, #ff8fb0);
+}
+
+body.dark-mode .nav-login-btn.logged-in {
+    background: var(--primary, #ff8fb0);
+    color: #fff;
+}
+
+body.dark-mode .login-modal-content {
+    background: var(--card, #1e1e2e);
+}

@@ -4,6 +4,8 @@ import os
 import tempfile
 import threading
 import time
+import uuid
+import functools
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
@@ -13,12 +15,53 @@ DATA_LOCK = threading.RLock()
 MAX_FEED_LOGS = int(os.environ.get('PROJECTCAT_MAX_FEED_LOGS', '500'))
 MAX_ADOPTION_APPS = int(os.environ.get('PROJECTCAT_MAX_ADOPTION_APPS', '500'))
 MAX_REPORTS = int(os.environ.get('PROJECTCAT_MAX_REPORTS', '1000'))
+MAX_USERS = int(os.environ.get('PROJECTCAT_MAX_USERS', '10000'))
+MAX_GUEST_FEEDS = 1  # 游客最多投喂次数
 ADMIN_TOKEN = os.environ.get('PROJECTCAT_ADMIN_TOKEN')
 APP_CACHE_BUST = os.environ.get('PROJECTCAT_CACHE_BUST') or str(int(time.time()))
 
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
+
+# ---------- 登录鉴权装饰器 ----------
+def login_required(f):
+    """要求请求携带有效的 Bearer Token（正式用户）"""
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        token = _extract_bearer_token()
+        if not token:
+            return jsonify({'success': False, 'message': '请先登录', 'need_login': True}), 401
+        user = _get_user_by_token(token)
+        if not user:
+            return jsonify({'success': False, 'message': '登录已过期，请重新登录', 'need_login': True}), 401
+        request._current_user = user
+        return f(*args, **kwargs)
+    return wrapper
+
+def optional_login(f):
+    """可选登录：如果带 token 就注入用户，不带也行"""
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        token = _extract_bearer_token()
+        request._current_user = _get_user_by_token(token) if token else None
+        return f(*args, **kwargs)
+    return wrapper
+
+def _extract_bearer_token():
+    auth = request.headers.get('Authorization', '')
+    if auth.startswith('Bearer '):
+        return auth[7:].strip()
+    return None
+
+def _get_user_by_token(token):
+    if not token:
+        return None
+    data = load_data()
+    for u in data.get('users', []):
+        if u.get('token') == token:
+            return u
+    return None
 
 @app.context_processor
 def inject_cache_bust():
@@ -106,11 +149,13 @@ def init_data():
                 }
             ],
             "feed_logs": [],
-            "adoption_applications": [],
-            "reports": [],
-            "volunteers": [],
-            "emergency_alerts": [],
-            "stats": {
+    "adoption_applications": [],
+    "reports": [],
+    "volunteers": [],
+    "emergency_alerts": [],
+    "users": [],
+    "guest_feeds": {},
+    "stats": {
                 "total_cats": 4,
                 "total_feeds": 791,
                 "total_views": 6156,
@@ -845,6 +890,234 @@ def get_cat_location(cat_id):
             })
     
     return jsonify({'error': 'Cat not found'}), 404
+
+# ========== 认证系统 API ==========
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    """手机号 + 验证码登录/注册"""
+    if not request.is_json:
+        return jsonify({'success': False, 'message': '请求格式错误'}), 400
+
+    req_data = request.get_json(silent=True) or {}
+    phone = _clean_str(req_data.get('phone'), 11)
+    code = _clean_str(req_data.get('code'), 6)
+
+    # 简单手机号校验
+    if not phone or len(phone) < 11 or not phone.isdigit():
+        return jsonify({'success': False, 'message': '请输入正确的手机号'}), 400
+
+    # MVP 阶段：验证码固定为 8888
+    if code != '8888':
+        return jsonify({'success': False, 'message': '验证码错误，请重试（测试验证码：8888）'}), 400
+
+    data = load_data()
+
+    # 查找或创建用户
+    user = None
+    for u in data.get('users', []):
+        if u.get('phone') == phone:
+            user = u
+            break
+
+    if user is None:
+        # 注册新用户
+        if len(data.get('users', [])) >= MAX_USERS:
+            return jsonify({'success': False, 'message': '系统用户数已达上限'}), 400
+        user = {
+            'id': _next_id(data.get('users', [])),
+            'phone': phone,
+            'nickname': f'爱猫人{phone[-4:]}',
+            'avatar': '🐱',
+            'role': 'user',
+            'points': 5,
+            'feed_count': 0,
+            'created_at': datetime.now().isoformat(timespec='seconds'),
+            'token': str(uuid.uuid4())
+        }
+        data['users'].append(user)
+    else:
+        # 刷新 token
+        user['token'] = str(uuid.uuid4())
+
+    save_data(data)
+
+    return jsonify({
+        'success': True,
+        'message': '登录成功',
+        'token': user['token'],
+        'user': {
+            'id': user['id'],
+            'phone': user['phone'],
+            'nickname': user['nickname'],
+            'avatar': user.get('avatar', '🐱'),
+            'role': user.get('role', 'user'),
+            'points': user.get('points', 0),
+            'feed_count': user.get('feed_count', 0)
+        }
+    })
+
+@app.route('/api/auth/me', methods=['GET'])
+@login_required
+def auth_me():
+    """获取当前登录用户信息"""
+    user = request._current_user
+    return jsonify({
+        'success': True,
+        'user': {
+            'id': user['id'],
+            'phone': user['phone'],
+            'nickname': user['nickname'],
+            'avatar': user.get('avatar', '🐱'),
+            'role': user.get('role', 'user'),
+            'points': user.get('points', 0),
+            'feed_count': user.get('feed_count', 0)
+        }
+    })
+
+@app.route('/api/auth/logout', methods=['POST'])
+def auth_logout():
+    """退出登录（清除 token）"""
+    token = _extract_bearer_token()
+    if token:
+        data = load_data()
+        for u in data.get('users', []):
+            if u.get('token') == token:
+                u['token'] = ''
+                save_data(data)
+                break
+    return jsonify({'success': True, 'message': '已退出登录'})
+
+# ========== 投喂 API（改造：区分登录用户与游客） ==========
+
+@app.route('/api/feed', methods=['POST'])
+@login_required
+def feed_cat_login():
+    """登录用户投喂（无限制，消耗积分）"""
+    if not request.is_json:
+        return jsonify({'success': False, 'message': '请求格式错误'}), 400
+
+    req_data = request.get_json(silent=True) or {}
+    cat_id = _to_int(req_data.get('cat_id'))
+    if not cat_id:
+        return jsonify({'success': False, 'message': 'cat_id 不合法'}), 400
+
+    user = request._current_user
+    user_name = user.get('nickname', '用户')
+
+    data = load_data()
+
+    target_cat = None
+    for cat in data['cats']:
+        if cat.get('id') == cat_id:
+            target_cat = cat
+            break
+    if not target_cat:
+        return jsonify({'success': False, 'message': '猫咪不存在'}), 404
+
+    # 更新猫咪投喂数
+    target_cat['feed_count'] = int(target_cat.get('feed_count', 0) or 0) + 1
+
+    # 更新用户投喂数
+    for u in data.get('users', []):
+        if u.get('id') == user.get('id'):
+            u['feed_count'] = u.get('feed_count', 0) + 1
+            u['points'] = u.get('points', 0) + 1
+            break
+
+    # 记录投喂日志
+    log = {
+        'id': _next_id(data['feed_logs']),
+        'cat_id': cat_id,
+        'user_name': user_name,
+        'user_id': user.get('id'),
+        'time': datetime.now().isoformat(timespec='seconds'),
+        'type': 'user'
+    }
+    data['feed_logs'].append(log)
+    if len(data['feed_logs']) > MAX_FEED_LOGS:
+        data['feed_logs'] = data['feed_logs'][-MAX_FEED_LOGS:]
+
+    save_data(data)
+
+    return jsonify({
+        'success': True,
+        'message': f'投喂成功！{user_name} 投喂了 {target_cat.get("name", "猫咪")}',
+        'cat_id': cat_id,
+        'feed_count': target_cat['feed_count'],
+        'is_guest': False
+    })
+
+@app.route('/api/feed-as-guest', methods=['POST'])
+def feed_as_guest():
+    """游客投喂（每人仅限 1 次）"""
+    if not request.is_json:
+        return jsonify({'success': False, 'message': '请求格式错误'}), 400
+
+    req_data = request.get_json(silent=True) or {}
+    cat_id = _to_int(req_data.get('cat_id'))
+    guest_id = _clean_str(req_data.get('guest_id'), 64)
+
+    if not cat_id:
+        return jsonify({'success': False, 'message': 'cat_id 不合法'}), 400
+    if not guest_id:
+        return jsonify({'success': False, 'message': 'missing guest_id'}), 400
+
+    data = load_data()
+
+    # 检查该游客是否已经投喂过
+    guest_feeds = data.get('guest_feeds', {})
+    guest_feed_count = guest_feeds.get(guest_id, {}).get('count', 0)
+
+    if guest_feed_count >= MAX_GUEST_FEEDS:
+        return jsonify({
+            'success': False,
+            'message': '游客投喂次数已用完，登录后无限畅喂！',
+            'need_login': True
+        }), 403
+
+    target_cat = None
+    for cat in data['cats']:
+        if cat.get('id') == cat_id:
+            target_cat = cat
+            break
+    if not target_cat:
+        return jsonify({'success': False, 'message': '猫咪不存在'}), 404
+
+    # 更新猫咪投喂数
+    target_cat['feed_count'] = int(target_cat.get('feed_count', 0) or 0) + 1
+
+    # 记录游客投喂
+    guest_feeds[guest_id] = {
+        'count': guest_feed_count + 1,
+        'last_feed': datetime.now().isoformat(timespec='seconds')
+    }
+    data['guest_feeds'] = guest_feeds
+
+    # 记录投喂日志
+    log = {
+        'id': _next_id(data['feed_logs']),
+        'cat_id': cat_id,
+        'user_name': '游客',
+        'guest_id': guest_id,
+        'time': datetime.now().isoformat(timespec='seconds'),
+        'type': 'guest'
+    }
+    data['feed_logs'].append(log)
+    if len(data['feed_logs']) > MAX_FEED_LOGS:
+        data['feed_logs'] = data['feed_logs'][-MAX_FEED_LOGS:]
+
+    save_data(data)
+
+    remaining = MAX_GUEST_FEEDS - guest_feed_count - 1
+    return jsonify({
+        'success': True,
+        'message': f'投喂成功！您还剩 {remaining} 次游客投喂机会，登录后无限畅喂！',
+        'cat_id': cat_id,
+        'feed_count': target_cat['feed_count'],
+        'is_guest': True,
+        'remaining': remaining
+    })
 
 if __name__ == '__main__':
     init_data()
