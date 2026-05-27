@@ -32,37 +32,49 @@
 
     <main class="main-content adopt-page">
         <div class="page-header">
-            <h1>🏠 MeowGuard</h1>
-            <p class="page-subtitle">领养中心 · 让救助、绝育、领养形成温柔闭环</p>
+            <h1>🏠 领养中心</h1>
+            <p class="page-subtitle">让救助、绝育、领养形成温柔闭环</p>
         </div>
 
+        <!-- 领养流程 - 分阶段过渡计划 -->
         <div class="adopt-intro">
             <div class="intro-card">
-                <h3>📋 领养流程</h3>
-                <div class="process-steps">
-                    <div class="step">
-                        <div class="step-num">1</div>
-                        <div class="step-desc">填写申请表</div>
+                <h3>📋 分阶段领养过渡计划</h3>
+                <div class="adoption-stages">
+                    <div class="stage-item" data-stage="1">
+                        <div class="stage-icon">📱</div>
+                        <div class="stage-info">
+                            <div class="stage-name">线上试养（D1-D7）</div>
+                            <div class="stage-detail">每日上传进食、饮水、精神短视频</div>
+                            <div class="stage-volunteer">第7天：志愿者上门初访（环境安全、猫咪状态）</div>
+                        </div>
                     </div>
-                    <div class="step-arrow">→</div>
-                    <div class="step">
-                        <div class="step-num">2</div>
-                        <div class="step-desc">身份认证</div>
+                    <div class="stage-arrow">↓</div>
+                    <div class="stage-item" data-stage="2">
+                        <div class="stage-icon">🏠</div>
+                        <div class="stage-info">
+                            <div class="stage-name">月度过渡（D8-D30）</div>
+                            <div class="stage-detail">每周上传视频 + 填写行为问卷</div>
+                            <div class="stage-volunteer">第30天：上门复检（体重、驱虫/疫苗、人猫互动）</div>
+                        </div>
                     </div>
-                    <div class="step-arrow">→</div>
-                    <div class="step">
-                        <div class="step-num">3</div>
-                        <div class="step-desc">线上审核</div>
+                    <div class="stage-arrow">↓</div>
+                    <div class="stage-item" data-stage="3">
+                        <div class="stage-icon">✅</div>
+                        <div class="stage-info">
+                            <div class="stage-name">稳定期（D31-D90）</div>
+                            <div class="stage-detail">每月简单反馈</div>
+                            <div class="stage-volunteer">第90天：终审回访，签署《领养确认书》</div>
+                        </div>
                     </div>
-                    <div class="step-arrow">→</div>
-                    <div class="step">
-                        <div class="step-num">4</div>
-                        <div class="step-desc">线下对接</div>
-                    </div>
-                    <div class="step-arrow">→</div>
-                    <div class="step">
-                        <div class="step-num">5</div>
-                        <div class="step-desc">正式领养</div>
+                    <div class="stage-arrow">↓</div>
+                    <div class="stage-item" data-stage="4">
+                        <div class="stage-icon">💝</div>
+                        <div class="stage-info">
+                            <div class="stage-name">终身关怀（长期）</div>
+                            <div class="stage-detail">每年猫咪健康年报、疫苗/绝育提醒</div>
+                            <div class="stage-volunteer">系统自动推送，无需上门</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -72,12 +84,15 @@
                     <li>领养人需年满 18 周岁，有稳定住所和收入</li>
                     <li>需同意为猫咪绝育、定期体检、接种疫苗</li>
                     <li>承诺科学喂养，不虐待、不弃养</li>
-                    <li>接受领养后的定期回访</li>
+                    <li>接受领养后的定期回访（详见分阶段计划）</li>
                     <li>如无法继续饲养，需联系平台协助重新安置</li>
+                    <li>💰 <strong>可退还保障金：</strong>领养时需支付 300 元保障金，D+30 回访通过后全额退还</li>
+                    <li>🔗 <strong>区块链存证：</strong>签署电子领养协议（含绝育条款），数据上链不可篡改</li>
                 </ul>
             </div>
         </div>
 
+        <!-- 待领养猫咪 -->
         <div class="available-cats">
             <h2>🐱 待领养猫咪</h2>
             <div class="cats-grid" id="adoptCatsGrid">
@@ -85,6 +100,7 @@
             </div>
         </div>
 
+        <!-- 领养申请表 -->
         <div class="application-form-section" id="formSection">
             <div class="form-overlay" id="formOverlay"></div>
             <div class="form-container">
@@ -178,12 +194,42 @@
                         </div>
                     </div>
 
+                    <!-- AI 匹配评分预览 -->
+                    <div class="form-section ai-match-section">
+                        <h3>🤖 AI 匹配评分预览</h3>
+                        <div class="ai-match-preview" id="aiMatchPreview">
+                            <p class="ai-match-placeholder">填写完信息后，AI 将自动计算您与所选猫咪的匹配度</p>
+                        </div>
+                        <div class="ai-match-bar" id="aiMatchBar" style="display:none;">
+                            <div class="ai-match-score">
+                                <span class="ai-match-label">匹配度评分</span>
+                                <span class="ai-match-value" id="aiMatchScore">--</span>
+                            </div>
+                            <div class="ai-match-progress">
+                                <div class="ai-match-fill" id="aiMatchFill" style="width:0%"></div>
+                            </div>
+                            <p class="ai-match-detail" id="aiMatchDetail"></p>
+                        </div>
+                    </div>
+
                     <div class="form-section">
                         <h3>承诺确认</h3>
                         <div class="checkbox-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="agreeTerms" required>
                                 <span>我承诺以上信息真实有效，并同意遵守领养须知中的所有条款</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="agreeNeuter" required>
+                                <span>我同意为领养猫咪进行绝育手术（如尚未绝育）</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="agreeDeposit" required>
+                                <span>我知悉需支付 300 元可退还保障金，D+30 回访通过后退还</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="agreeBlockchain" required>
+                                <span>我同意签署电子领养协议，数据通过区块链存证（不可篡改）</span>
                             </label>
                         </div>
                     </div>
@@ -193,6 +239,20 @@
                         <button type="submit" class="btn-submit">提交申请</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- 领养追踪面板 -->
+        <div class="adopt-track-section">
+            <h2>📊 我的领养进度</h2>
+            <div class="adopt-track-empty" id="adoptTrackEmpty">
+                <p>提交申请后，您可以在此追踪领养进度</p>
+                <div class="adopt-track-placeholder">
+                    <div class="track-step">📱 线上试养 → 🏠 月度过渡 → ✅ 稳定期 → 💝 终身关怀</div>
+                </div>
+            </div>
+            <div class="adopt-track-progress" id="adoptTrackProgress" style="display:none;">
+                <!-- 动态填充 -->
             </div>
         </div>
     </main>
@@ -214,6 +274,7 @@
             });
         }
     </script>
+    <!-- 页面嵌套 Script -->
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             const cats = await loadAdoptableCats();
@@ -247,6 +308,23 @@
             }
         }
 
+        function getCatEmoji(color) {
+            if (!color) return '🐱';
+            const lower = color.toLowerCase();
+            if (lower.includes('橘') || lower.includes('橙')) return '🐱';
+            if (lower.includes('黑')) return '🐈';
+            if (lower.includes('白')) return '🐱';
+            if (lower.includes('三花') || lower.includes('玳瑁')) return '🐱';
+            if (lower.includes('灰') || lower.includes('蓝')) return '🐈';
+            return '🐱';
+        }
+
+        function getAdoptionReason(cat) {
+            if (cat.neutered === false) return '该猫咪尚未绝育，暂不可领养';
+            if (cat.health && cat.health.includes('病')) return '该猫咪健康状况不佳，暂不可领养';
+            return '该猫咪暂不可领养';
+        }
+
         function renderAdoptableCats(cats) {
             const grid = document.getElementById('adoptCatsGrid');
             if (cats.length === 0) {
@@ -261,41 +339,131 @@
                     </div>
                     <div class="cat-card-info">
                         <h3 class="cat-name">${cat.name}</h3>
-                        <p class="cat-nickname">"${cat.nickname}"</p>
+                        <p class="cat-nickname">"${cat.nickname || ''}"</p>
                         <div class="cat-tags">
-                            <span class="tag">${cat.gender === 'male' ? '♂' : '♀'} ${cat.age}</span>
-                            <span class="tag color">${cat.color}</span>
-                            ${cat.neutered ? '<span class="tag neutered">已绝育</span>' : ''}
+                            <span class="tag">${cat.gender === 'female' ? '♀' : '♂'} ${cat.age || '未知'}</span>
+                            <span class="tag color">${cat.color || '未知毛色'}</span>
+                            ${cat.neutered ? '<span class="tag neutered">已绝育</span>' : '<span class="tag not-neutered">未绝育</span>'}
                         </div>
-                        <p class="cat-description">${cat.description}</p>
-                        <button class="adopt-apply-btn" onclick="openForm(${cat.id})">申请领养</button>
+                        <p class="cat-description">${cat.description || '暂无简介'}</p>
+                        <!-- AI 性格画像 -->
+                        <div class="cat-personality">
+                            <h4>🤖 AI 性格画像</h4>
+                            <p>${getPersonality(cat)}</p>
+                        </div>
+                        <div class="adopt-meta">
+                            <span>📍 ${cat.location || '未知位置'}</span>
+                            <span>📊 已喂 ${cat.feed_count || 0} 次</span>
+                        </div>
+                        <div class="cat-health-brief">
+                            <span>🩺 ${cat.health || '健康状态未知'}</span>
+                        </div>
+                        <button class="adopt-apply-btn" onclick="openForm(${cat.id})">📝 申请领养</button>
+                        <p class="deposit-note">💰 需支付 300 元可退还保障金</p>
                     </div>
                 </div>
             `).join('');
+        }
+
+        // AI 性格画像生成（模拟）
+        function getPersonality(cat) {
+            const personalities = ['粘人精，喜欢蹭蹭', '独立自主，有自己的小世界', '活泼好动，精力充沛', '温柔安静，适合陪伴', '吃货一枚，对食物充满热情', '社恐但会偷偷观察你'];
+            const idx = (cat.id * 7) % personalities.length;
+            return personalities[idx];
         }
 
         function openForm(catId) {
             document.getElementById('selectedCatId').value = catId;
             document.getElementById('formSection').classList.add('show');
             document.body.style.overflow = 'hidden';
+            
+            // AI 匹配评分预览
+            updateAiMatchPreview(catId);
         }
 
         function closeForm() {
             document.getElementById('formSection').classList.remove('show');
             document.body.style.overflow = '';
             document.getElementById('adoptForm').reset();
+            // 隐藏 AI 匹配
+            document.getElementById('aiMatchPreview').style.display = 'block';
+            document.getElementById('aiMatchBar').style.display = 'none';
         }
 
         document.getElementById('formClose').addEventListener('click', closeForm);
         document.getElementById('formOverlay').addEventListener('click', closeForm);
         document.getElementById('cancelBtn').addEventListener('click', closeForm);
 
-        // 支持 ESC 键关闭表单
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeForm();
             }
         });
+
+        // 实时更新 AI 匹配评分
+        function updateAiMatchPreview(catId) {
+            const reason = document.getElementById('adoptionReason');
+            const housingType = document.getElementById('housingType');
+            const petExperience = document.getElementById('petExperience');
+            
+            function calculateMatch() {
+                let score = 50; // 基础分
+                
+                // 动机分析
+                const reasonText = reason.value.toLowerCase();
+                if (reasonText.includes('陪伴') || reasonText.includes('爱')) score += 15;
+                if (reasonText.includes('救助') || reasonText.includes('流浪')) score += 10;
+                if (reasonText.includes('责任')) score += 5;
+                
+                // 居住条件
+                if (housingType.value === 'own') score += 10;
+                if (housingType.value === 'family') score += 5;
+                
+                // 养宠经验
+                if (petExperience.value === 'yes') score += 10;
+                
+                score = Math.min(score, 98);
+                score = Math.max(score, 20);
+                
+                return score;
+            }
+            
+            function renderMatch() {
+                const score = calculateMatch();
+                const preview = document.getElementById('aiMatchPreview');
+                const bar = document.getElementById('aiMatchBar');
+                const scoreEl = document.getElementById('aiMatchScore');
+                const fill = document.getElementById('aiMatchFill');
+                const detail = document.getElementById('aiMatchDetail');
+                
+                const hasInput = reason.value.trim() || housingType.value || petExperience.value;
+                
+                if (hasInput) {
+                    preview.style.display = 'none';
+                    bar.style.display = 'block';
+                    scoreEl.textContent = score + '/100';
+                    fill.style.width = score + '%';
+                    
+                    if (score >= 80) {
+                        fill.style.background = '#4CAF50';
+                        detail.textContent = '✨ 匹配度优秀！您很可能是理想的领养人';
+                    } else if (score >= 60) {
+                        fill.style.background = '#FF9800';
+                        detail.textContent = '👍 匹配度良好，建议完善养宠知识储备';
+                    } else {
+                        fill.style.background = '#F44336';
+                        detail.textContent = '📚 匹配度较低，建议先学习养宠知识或参与云养猫';
+                    }
+                } else {
+                    preview.style.display = 'block';
+                    bar.style.display = 'none';
+                }
+            }
+            
+            reason.addEventListener('input', renderMatch);
+            housingType.addEventListener('change', renderMatch);
+            petExperience.addEventListener('change', renderMatch);
+        }
 
         document.getElementById('adoptForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -325,14 +493,75 @@
                 
                 const result = await response.json();
                 if (result.success) {
-                    showToast(result.message);
+                    showToast('✅ ' + result.message + '。请等待审核，通过后将进入分阶段领养过渡计划。');
                     closeForm();
+                    // 刷新追踪面板
+                    loadAdoptionProgress();
+                } else {
+                    showToast('❌ ' + (result.message || '提交失败'));
                 }
             } catch (error) {
                 console.error('提交申请失败:', error);
                 showToast('提交失败，请稍后重试');
             }
         });
+
+        // 领养进度追踪
+        async function loadAdoptionProgress() {
+            try {
+                const response = await fetch('/api/adopt/status');
+                const status = await response.json();
+                
+                const emptyEl = document.getElementById('adoptTrackEmpty');
+                const progressEl = document.getElementById('adoptTrackProgress');
+                
+                if (status && status.stage) {
+                    emptyEl.style.display = 'none';
+                    progressEl.style.display = 'block';
+                    
+                    const stages = [
+                        { name: '线上试养', days: 'D1-D7', icon: '📱', key: 'trial' },
+                        { name: '月度过渡', days: 'D8-D30', icon: '🏠', key: 'transition' },
+                        { name: '稳定期', days: 'D31-D90', icon: '✅', key: 'stable' },
+                        { name: '终身关怀', days: '长期', icon: '💝', key: 'lifetime' }
+                    ];
+                    
+                    const currentStageIdx = stages.findIndex(s => s.key === status.stage);
+                    
+                    progressEl.innerHTML = `
+                        <div class="track-cat-info">
+                            <span class="track-cat-icon">🐱</span>
+                            <span>领养猫咪：<strong>${status.cat_name || '未知'}</strong></span>
+                            <span class="track-status">当前阶段：${stages[currentStageIdx]?.icon || ''} ${stages[currentStageIdx]?.name || status.stage}</span>
+                        </div>
+                        <div class="track-steps">
+                            ${stages.map((stage, idx) => `
+                                <div class="track-step-item ${idx < currentStageIdx ? 'completed' : idx === currentStageIdx ? 'active' : ''}">
+                                    <div class="track-step-dot">${idx < currentStageIdx ? '✅' : stage.icon}</div>
+                                    <div class="track-step-name">${stage.name}</div>
+                                    <div class="track-step-days">${stage.days}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${status.deposit_refunded !== undefined ? `
+                        <div class="track-deposit">
+                            💰 保障金状态：${status.deposit_refunded ? '✅ 已退还' : '⏳ 待D+30回访后退还（300元）'}
+                        </div>
+                        ` : ''}
+                        ${status.blockchain_tx ? `
+                        <div class="track-blockchain">
+                            🔗 区块链存证：<a href="https://etherscan.io/tx/${status.blockchain_tx}" target="_blank">查看上链记录</a>
+                        </div>
+                        ` : ''}
+                    `;
+                }
+            } catch (error) {
+                console.log('未登录或领养状态加载失败:', error.message);
+            }
+        }
+
+        // 页面加载时检查领养进度
+        loadAdoptionProgress();
     </script>
 </body>
 </html>
