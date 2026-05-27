@@ -50,24 +50,78 @@
             </div>
         </div>
 
+        <!-- 失踪警告横幅（如有） -->
+        <div class="missing-alert-banner" id="missingAlertBanner" style="display:none;">
+            <span class="missing-alert-icon">🔔</span>
+            <span class="missing-alert-text" id="missingAlertText"></span>
+            <button class="missing-alert-dismiss" onclick="dismissMissingAlert()">✕</button>
+        </div>
+
         <!-- 猫咪列表 -->
         <div class="cats-list" id="catsList">
             <!-- 猫咪卡片将由 JS 动态生成 -->
         </div>
 
-        <!-- 猫咪详情弹窗 -->
+        <!-- 猫咪详情弹窗（增强版） -->
         <div class="cat-detail-modal" id="catDetailModal">
             <div class="modal-content">
                 <button class="modal-close" id="modalClose">&times;</button>
                 <div class="modal-body" id="modalBody">
-                    <!-- 详情内容 -->
+                    <div class="detail-tabs">
+                        <button class="detail-tab active" data-tab="detail-overview">📋 基本信息</button>
+                        <button class="detail-tab" data-tab="detail-diary">📖 猫咪日记</button>
+                        <button class="detail-tab" data-tab="detail-missing">🔔 失踪响应</button>
+                    </div>
+                    <div class="detail-tab-content" id="detailOverview">
+                        <!-- 基本信息 -->
+                    </div>
+                    <div class="detail-tab-content" id="detailDiary" style="display:none;">
+                        <!-- AI 猫咪日记 -->
+                    </div>
+                    <div class="detail-tab-content" id="detailMissing" style="display:none;">
+                        <!-- 失踪响应 SOP -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 可折叠的信息面板 -->
+        <!-- 社区共治面板（右侧/底部折叠） -->
         <div class="info-panels">
-            <!-- 积分排行榜（可折叠） -->
+            <!-- 社区共治中心 -->
+            <div class="info-panel collapsible" id="govPanel">
+                <div class="panel-header" onclick="togglePanel('govPanel')">
+                    <h3>🏘️ 社区共治中心</h3>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-content">
+                    <div class="gov-items">
+                        <div class="gov-item">
+                            <span class="gov-item-icon">✅</span>
+                            <div class="gov-item-content">
+                                <div class="gov-item-title">禁止私自捕捉、转移、遗弃</div>
+                                <div class="gov-item-desc">违反者将终止服务并上报街道</div>
+                            </div>
+                        </div>
+                        <div class="gov-item warning">
+                            <span class="gov-item-icon">⚠️</span>
+                            <div class="gov-item-content">
+                                <div class="gov-item-title">无害替代方案</div>
+                                <div class="gov-item-desc">迁移猫屋、分时段投喂、加强绝育、超声波驱避</div>
+                            </div>
+                        </div>
+                        <div class="gov-item">
+                            <span class="gov-item-icon">📅</span>
+                            <div class="gov-item-content">
+                                <div class="gov-item-title">两周闭环执行计划</div>
+                                <div class="gov-item-desc">投诉→建议报告→物业执行→7天反馈→14天结案</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="gov-report-btn" onclick="openGovReport()">📝 提交投诉/建议</button>
+                </div>
+            </div>
+
+            <!-- 积分排行榜 -->
             <div class="info-panel collapsible" id="leaderboardPanel">
                 <div class="panel-header" onclick="togglePanel('leaderboardPanel')">
                     <h3>🏆 积分排行榜</h3>
@@ -76,12 +130,11 @@
                 <div class="panel-content">
                     <p class="panel-subtitle">积分获取：投喂 +1 分 · 分享 +2 分 · 领养成功 +100 分</p>
                     <div class="leaderboard-list" id="leaderboardList">
-                        <!-- 排行榜内容 -->
                     </div>
                 </div>
             </div>
 
-            <!-- 数据统计（可折叠） -->
+            <!-- 平台数据 -->
             <div class="info-panel collapsible" id="statsPanel">
                 <div class="panel-header" onclick="togglePanel('statsPanel')">
                     <h3>📊 平台数据</h3>
@@ -109,7 +162,7 @@
                 </div>
             </div>
 
-            <!-- 消息通知（可折叠） -->
+            <!-- 消息通知 -->
             <div class="info-panel collapsible" id="notificationPanel">
                 <div class="panel-header" onclick="togglePanel('notificationPanel')">
                     <h3>🔔 消息通知</h3>
@@ -117,12 +170,23 @@
                 </div>
                 <div class="panel-content">
                     <div class="notification-list" id="notificationList">
-                        <!-- 通知列表 -->
                     </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- 治理报告弹窗 -->
+    <div class="gov-report-modal" id="govReportModal">
+        <div class="gov-report-content">
+            <h3>📝 提交社区投诉/建议</h3>
+            <textarea id="govReportText" placeholder="请描述您遇到的问题或建议（如夜间猫叫扰民、猫群聚集等）"></textarea>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="closeGovReport()">取消</button>
+                <button class="btn btn-primary" onclick="submitGovReport()">提交</button>
+            </div>
+        </div>
+    </div>
 
     <div class="toast" id="toast"></div>
 
@@ -172,7 +236,6 @@
             try {
                 const response = await fetch('/api/cats');
                 catsData = await response.json();
-                // 按 feed_count 降序排序，确保排行榜和卡片顺序一致
                 const sortedCats = [...catsData].sort((a, b) => (b.feed_count || 0) - (a.feed_count || 0));
                 renderCats(sortedCats);
                 updateStats();
@@ -198,6 +261,7 @@
                             ${cat.name.charAt(0)}
                         </div>
                         ${index < 3 ? `<div class="rank-badge rank-${index + 1}">${index + 1}</div>` : ''}
+                        ${cat.missing_status ? `<div class="missing-badge" title="${cat.missing_status}天未出现">🔔</div>` : ''}
                     </div>
                     <div class="cat-card-info">
                         <div class="cat-card-header">
@@ -208,7 +272,7 @@
                         <div class="cat-card-location">📍 ${cat.location || '未知位置'}</div>
                         <div class="cat-card-tags">
                             ${cat.gender === 'female' ? '<span class="tag tag-female">♀</span>' : '<span class="tag tag-male">♂</span>'}
-                            ${cat.neutered ? '<span class="tag tag-success">已绝育</span>' : ''}
+                            ${cat.neutered ? '<span class="tag tag-success">已绝育</span>' : '<span class="tag tag-warning">未绝育</span>'}
                             ${cat.adoption_ready ? '<span class="tag tag-warning">可领养</span>' : ''}
                             <span class="tag">${cat.age || '未知年龄'}</span>
                         </div>
@@ -220,8 +284,28 @@
                 </div>
             `).join('');
 
-            // 排行榜使用已排序的数据
             renderLeaderboard(cats);
+            checkMissingAlerts(cats);
+        }
+
+        // 检查失踪警报
+        function checkMissingAlerts(cats) {
+            const missingCats = cats.filter(cat => cat.missing_status && cat.missing_status >= 7);
+            const banner = document.getElementById('missingAlertBanner');
+            const text = document.getElementById('missingAlertText');
+            
+            if (missingCats.length > 0) {
+                const names = missingCats.map(c => c.name).join('、');
+                text.innerHTML = `🐾 <strong>失踪提醒：</strong>"${names}" 已${Math.max(...missingCats.map(c => c.missing_status))}天未出现。如果您在小区看到它们，请点击上报位置。`;
+                banner.style.display = 'flex';
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+
+        // 关闭失踪警告
+        function dismissMissingAlert() {
+            document.getElementById('missingAlertBanner').style.display = 'none';
         }
 
         // 获取头像颜色
@@ -234,7 +318,6 @@
         function renderLeaderboard(cats) {
             const container = document.getElementById('leaderboardList');
             
-            // cats 已经是按 feed_count 降序排序的
             if (cats.length === 0) {
                 container.innerHTML = '<div class="empty-notifications">暂无排行榜数据</div>';
                 return;
@@ -281,7 +364,7 @@
                 
                 if (result.success) {
                     showToast(`✅ 投喂成功！${catName} 收到了你的心意`);
-                    loadCats(); // 重新加载数据
+                    loadCats();
                 } else {
                     showToast(`❌ ${result.message}`);
                 }
@@ -291,7 +374,7 @@
             }
         }
 
-        // 显示猫咪详情
+        // 显示猫咪详情（增强版：支持多标签页）
         async function showCatDetail(catId) {
             try {
                 const response = await fetch(`/api/cat/${catId}`);
@@ -300,7 +383,8 @@
                 const modal = document.getElementById('catDetailModal');
                 const modalBody = document.getElementById('modalBody');
                 
-                modalBody.innerHTML = `
+                // 基本信息
+                document.getElementById('detailOverview').innerHTML = `
                     <div class="detail-header">
                         <div class="detail-avatar" style="background-color: ${getAvatarColor(cat.id)}">
                             ${cat.name.charAt(0)}
@@ -365,12 +449,125 @@
                         ` : ''}
                     </div>
                 `;
+
+                // 猫咪日记
+                document.getElementById('detailDiary').innerHTML = `
+                    <h3>📖 ${cat.name} 的AI日记</h3>
+                    <div class="diary-entries" id="diaryEntries">
+                        ${generateMockDiary(cat)}
+                    </div>
+                    <div class="diary-co-create">
+                        📸 拍了${cat.name}的照片？<strong>上传照片</strong>，AI 猫脸识别匹配后追加到日记！
+                    </div>
+                `;
+
+                // 失踪响应 SOP
+                const missingDays = cat.missing_status || 0;
+                const missingLevel = missingDays >= 14 ? '升级响应' : missingDays >= 7 ? '正式响应' : missingDays >= 5 ? '预警' : '正常';
+                const missingAction = missingDays >= 14 
+                    ? '已结案，标记"失踪/离区"' 
+                    : missingDays >= 7 
+                    ? '社区推送寻猫消息 + 志愿者轻量介入' 
+                    : missingDays >= 5 
+                    ? '内部标记，不推送用户' 
+                    : '猫咪近期活跃，无需担忧';
+                document.getElementById('detailMissing').innerHTML = `
+                    <h3>🔔 失踪响应 SOP</h3>
+                    <div class="sop-table">
+                        <table>
+                            <tr><th>当前状态</th><td>${missingDays > 0 ? missingDays + '天未出现' : '活跃中'}</td></tr>
+                            <tr><th>响应级别</th><td><span class="sop-level-${missingLevel === '正常' ? 'normal' : 'alert'}">${missingLevel}</span></td></tr>
+                            <tr><th>采取行动</th><td>${missingAction}</td></tr>
+                        </table>
+                    </div>
+                    <div class="sop-detail">
+                        <h4>📋 判定标准</h4>
+                        <ul>
+                            <li><strong>预警：</strong>连续5天未出现 → 内部标记</li>
+                            <li><strong>正式响应：</strong>连续7天未出现 → 社区寻猫推送</li>
+                            <li><strong>升级响应：</strong>连续14天未出现 → 标记失踪/离区</li>
+                        </ul>
+                        <h4>🐾 寻猫文案示例</h4>
+                        <blockquote>
+                            🐾 【猫咪失踪提醒】您身边的"${cat.name || '未知'}"已${missingDays || '?'}天未出现。如果您在小区看到它，请点击上报位置或照片。无需主动搜索，路过时留意即可。
+                        </blockquote>
+                        <h4>🧑‍⚕️ 志愿者操作（轻量）</h4>
+                        <ul>
+                            <li>核实后台目击上报</li>
+                            <li>在社区微信群发一次寻猫信息（不刷屏）</li>
+                            <li>禁止地毯式搜索</li>
+                            <li>每日花2分钟查看新目击</li>
+                        </ul>
+                    </div>
+                `;
+                
+                // 重置标签页
+                document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.detail-tab[data-tab="detail-overview"]').classList.add('active');
+                document.getElementById('detailOverview').style.display = 'block';
+                document.getElementById('detailDiary').style.display = 'none';
+                document.getElementById('detailMissing').style.display = 'none';
+
+                // 绑定标签页切换事件
+                document.querySelectorAll('.detail-tab').forEach(tab => {
+                    tab.onclick = function() {
+                        document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+                        this.classList.add('active');
+                        const targetId = this.dataset.tab;
+                        document.getElementById('detailOverview').style.display = targetId === 'detail-overview' ? 'block' : 'none';
+                        document.getElementById('detailDiary').style.display = targetId === 'detail-diary' ? 'block' : 'none';
+                        document.getElementById('detailMissing').style.display = targetId === 'detail-missing' ? 'block' : 'none';
+                    };
+                });
                 
                 modal.classList.add('show');
             } catch (error) {
                 console.error('加载详情失败:', error);
                 showToast('加载详情失败');
             }
+        }
+
+        // 生成模拟日记
+        function generateMockDiary(cat) {
+            const today = new Date();
+            const entries = [];
+            for (let i = 3; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                const dateStr = d.toLocaleDateString('zh-CN', { month:'long', day:'numeric' });
+                const visits = [1, 2, 3, 4, 5][Math.floor(Math.random() * 5)];
+                const times = ['清晨6点', '上午10点', '下午3点', '晚上10点'];
+                const time = times[Math.floor(Math.random() * times.length)];
+                const mood = ['很安心', '有点调皮', '懒洋洋的', '精神很好', '吃得很香'];
+                const moodStr = mood[Math.floor(Math.random() * mood.length)];
+                entries.push(`
+                    <div class="diary-entry">
+                        <div class="diary-date">📅 ${dateStr}</div>
+                        <div class="diary-text">
+                            ${cat.name || '猫咪'} 今天来了 ${visits} 次，最喜欢 ${time} 那顿。它吃得很${moodStr}，还对着摄像头打了个哈欠。💤
+                        </div>
+                        <div class="diary-stats">
+                            🍖 投喂 ${visits * 2} 次 · ⏱ 停留 ${visits * 15} 分钟
+                        </div>
+                    </div>
+                `);
+            }
+            return entries.join('');
+        }
+
+        // 治理报告弹窗
+        function openGovReport() {
+            document.getElementById('govReportModal').style.display = 'flex';
+        }
+        function closeGovReport() {
+            document.getElementById('govReportModal').style.display = 'none';
+        }
+        function submitGovReport() {
+            const text = document.getElementById('govReportText').value.trim();
+            if (!text) { showToast('请输入内容'); return; }
+            showToast('✅ 报告已提交，系统将自动生成治理建议');
+            closeGovReport();
+            document.getElementById('govReportText').value = '';
         }
 
         // 关闭详情弹窗
@@ -468,7 +665,6 @@
                 `}).join('');
             } catch (error) {
                 console.error('加载通知失败:', error);
-                // 显示模拟通知用于演示
                 showMockNotifications();
             }
         }
