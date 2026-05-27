@@ -2516,8 +2516,198 @@ const ScrollAnimations = {
 };
 
 // ============================================
-// Service Worker 注册
+// 猫咪日记生成模块
 // ============================================
+
+const CatDiary = {
+    templates: {
+        day: [
+            '今天{name}来了{cnt}次，最喜欢{prefer}那顿。它吃得很安心，还对着摄像头{action}。',
+            '{name}今天特别活跃，在猫屋周围{action}了几圈。来的时候{weather_desc}，它{emotion}地蹭了蹭猫屋。',
+            '{name}今天似乎有些{emotion}，在猫屋待了{time}分钟。它{action}，可能是在等它的猫朋友。',
+            '清晨{time}，{name}第一个来到猫屋。它{action}，开启了元气满满的一天。',
+            '{name}今天来了{cnt}次，每次停留约{time}分钟。它最喜欢的{prefer}似乎胃口很好，吃得干干净净。'
+        ],
+        action: ['打了个哈欠', '伸了个懒腰', '甩了甩尾巴', '舔了舔爪子', '眯了眯眼睛', '轻轻叫了一声'],
+        weather: ['阳光很好', '微风习习', '有些凉意', '刚下过雨', '天气暖和', '夜幕降临'],
+        emotion: ['开心', '慵懒', '警惕', '放松', '好奇', '温柔'],
+        prefer: ['早上', '中午', '下午', '晚上', '深夜']
+    },
+
+    generate(cat, visits) {
+        const tpl = this._pick(this.templates.day);
+        const action = this._pick(this.templates.action);
+        const weather = this._pick(this.templates.weather);
+        const emotion = this._pick(this.templates.emotion);
+        const prefer = this._pick(this.templates.prefer);
+        const cnt = visits?.count || Math.floor(Math.random() * 4) + 1;
+        const time = visits?.avg_duration || Math.floor(Math.random() * 20) + 5;
+        
+        return tpl
+            .replace(/\{name\}/g, cat.name || '猫咪')
+            .replace(/\{cnt\}/g, cnt)
+            .replace(/\{action\}/g, action)
+            .replace(/\{weather_desc\}/g, weather)
+            .replace(/\{emotion\}/g, emotion)
+            .replace(/\{prefer\}/g, prefer)
+            .replace(/\{time\}/g, time);
+    },
+
+    _pick(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    },
+
+    // 生成当天日期标题
+    today() {
+        const d = new Date();
+        const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+        return `${d.getMonth() + 1}月${d.getDate()}日 ${weekdays[d.getDay()]}`;
+    }
+};
+
+// ============================================
+// 失踪猫咪追踪模块
+// ============================================
+
+const MissingCatTracker = {
+    LEVELS: {
+        warning: { days: 5, label: '预警', icon: '🟡', push: false },
+        response: { days: 7, label: '正式响应', icon: '🟠', push: true },
+        escalated: { days: 14, label: '升级响应', icon: '🔴', push: true }
+    },
+
+    // 根据连续未出现天数判断级别
+    getLevel(daysAbsent) {
+        if (daysAbsent >= 14) return 'escalated';
+        if (daysAbsent >= 7) return 'response';
+        if (daysAbsent >= 5) return 'warning';
+        return null;
+    },
+
+    // 获取状态文本
+    getStatus(daysAbsent) {
+        const level = this.getLevel(daysAbsent);
+        if (!level) return { text: '活跃', icon: '🟢', action: null };
+        const cfg = this.LEVELS[level];
+        return {
+            text: cfg.label + `（${daysAbsent}天未出现）`,
+            icon: cfg.icon,
+            action: cfg.push ? '推送寻猫消息' : '内部标记'
+        };
+    },
+
+    // 生成推送文案
+    pushText(cat) {
+        const name = cat.name || '猫咪';
+        return `🐾 【猫咪失踪提醒】您身边的"${name}"已7天未出现。如果您在小区看到它，请点击上报位置或照片。无需主动搜索，路过时留意即可。`;
+    },
+
+    // 生成回归推送
+    returnText(cat) {
+        const name = cat.name || '猫咪';
+        return `🎉 【回归通知】好消息！消失了一段时间的"${name}"刚刚回到猫屋啦！它看起来状态不错，欢迎继续关注它~`;
+    }
+};
+
+// ============================================
+// 社区共治调解模块
+// ============================================
+
+const CommunityMediation = {
+    // 禁止清单
+    forbiddenActions: [
+        '私自捕捉猫咪',
+        '擅自转移或遗弃猫咪',
+        '破坏猫屋设备',
+        '投喂有害食物',
+        '驱赶或虐待猫咪'
+    ],
+
+    // 无害替代方案
+    alternatives: [
+        { problem: '夜间猫叫声', solutions: ['加强绝育（减少发情叫声）', '迁移猫屋至远离居民楼的位置', '分时段投喂（避免深夜聚集）', '安装超声波驱避器（人道驱离）'] },
+        { problem: '猫咪聚集', solutions: ['分散设置多个投喂点', '控制单次投喂量', '引导至非居民区活动', 'TNR（诱捕-绝育-放归）计划'] },
+        { problem: '粪便问题', solutions: ['设置固定猫砂盆区域', '定期清理维护', '引导猫咪至绿化带活动', '与物业协商指定活动区域'] },
+        { problem: '过敏/卫生担忧', solutions: ['保持猫屋周边清洁', '定期消毒设备', '设置远离居民楼的投喂点', '提供科普资料说明科学管理方法'] }
+    ],
+
+    // 生成治理建议报告
+    generateReport(complaint) {
+        const problem = complaint?.problem || '猫咪相关问题';
+        const matched = this.alternatives.find(a => problem.includes(a.problem)) || this.alternatives[0];
+
+        return {
+            forbidden: this.forbiddenActions,
+            alternatives: matched.solutions,
+            plan: {
+                week1: '评估现状，制定调整方案',
+                week2: '实施方案，监测效果'
+            }
+        };
+    },
+
+    // 获取禁止清单HTML
+    getForbiddenHTML() {
+        return this.forbiddenActions.map(a => `<li>❌ ${a}</li>`).join('');
+    },
+
+    // 获取替代方案HTML
+    getAlternativesHTML(problem) {
+        const matched = this.alternatives.find(a => problem && problem.includes(a.problem)) || this.alternatives[0];
+        return matched.solutions.map(s => `<li>✅ ${s}</li>`).join('');
+    }
+};
+
+// ============================================
+// 资源分配可视化模块
+// ============================================
+
+const ResourceAllocation = {
+    // 计算资源分配比例
+    calculate(cats) {
+        const total = cats.length;
+        const neutered = cats.filter(c => c.neutered).length;
+        const unneutered = total - neutered;
+        const neuteredPct = total > 0 ? Math.round((neutered / total) * 100) : 0;
+        const unneuteredPct = 100 - neuteredPct;
+
+        // 投喂优先级：未绝育猫获得更多资源
+        return {
+            unneuteredPct: Math.max(unneuteredPct, 30), // 至少30%
+            neuteredPct: Math.min(neuteredPct, 70), // 最多70%
+            totalCats: total,
+            neuteredCount: neutered,
+            unneuteredCount: unneutered,
+            month: (new Date().getMonth() + 1) + '月'
+        };
+    },
+
+    // 生成说明文案
+    getExplanation() {
+        return '已绝育猫已无繁殖压力，适当减少投喂可鼓励其保留自然捕食能力，更健康、更有野性。如果你想专门投喂某只已绝育猫，可使用"爱心加餐"功能（消耗积分或小额支付）。';
+    },
+
+    // 渲染资源分配条形图 HTML
+    renderHTML(data) {
+        const unPct = data.unneuteredPct || 50;
+        const neuPct = data.neuteredPct || 50;
+        return `
+            <div class="resource-bar">
+                <div class="resource-bar-segment unneutered" style="width:${unPct}%">
+                    <span>未绝育猫 ${unPct}%</span>
+                </div>
+                <div class="resource-bar-segment neutered" style="width:${neuPct}%">
+                    <span>已绝育猫 ${neuPct}%</span>
+                </div>
+            </div>
+            <p class="resource-explanation">${this.getExplanation()}</p>
+        `;
+    }
+};
+
+// ============================================
+// Service Worker 注册
+// ===========================================
 
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
